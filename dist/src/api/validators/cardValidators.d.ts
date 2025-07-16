@@ -35,9 +35,9 @@ export declare const createCardSchema: z.ZodObject<{
         type: "single_use" | "multi_use";
         firstName: string;
         lastName: string;
+        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         phoneNumber: string;
         city: string;
-        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         postalCode: string;
         country: "US";
         programId: number;
@@ -56,9 +56,9 @@ export declare const createCardSchema: z.ZodObject<{
         type: "single_use" | "multi_use";
         firstName: string;
         lastName: string;
+        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         phoneNumber: string;
         city: string;
-        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         postalCode: string;
         country: "US";
         programId: number;
@@ -77,9 +77,9 @@ export declare const createCardSchema: z.ZodObject<{
         type: "single_use" | "multi_use";
         firstName: string;
         lastName: string;
+        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         phoneNumber: string;
         city: string;
-        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         postalCode: string;
         country: "US";
         programId: number;
@@ -98,9 +98,9 @@ export declare const createCardSchema: z.ZodObject<{
         type: "single_use" | "multi_use";
         firstName: string;
         lastName: string;
+        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         phoneNumber: string;
         city: string;
-        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         postalCode: string;
         country: "US";
         programId: number;
@@ -121,9 +121,9 @@ export declare const createCardSchema: z.ZodObject<{
         type: "single_use" | "multi_use";
         firstName: string;
         lastName: string;
+        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         phoneNumber: string;
         city: string;
-        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         postalCode: string;
         country: "US";
         programId: number;
@@ -144,9 +144,9 @@ export declare const createCardSchema: z.ZodObject<{
         type: "single_use" | "multi_use";
         firstName: string;
         lastName: string;
+        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         phoneNumber: string;
         city: string;
-        state: "NY" | "MS" | "OK" | "AL" | "AK" | "AZ" | "AR" | "CA" | "CO" | "CT" | "DE" | "FL" | "GA" | "HI" | "ID" | "IL" | "IN" | "IA" | "KS" | "KY" | "LA" | "ME" | "MD" | "MA" | "MI" | "MN" | "MO" | "MT" | "NE" | "NV" | "NH" | "NJ" | "NM" | "NC" | "ND" | "OH" | "OR" | "PA" | "RI" | "SC" | "SD" | "TN" | "TX" | "UT" | "VT" | "VA" | "WA" | "WV" | "WI" | "WY" | "DC";
         postalCode: string;
         country: "US";
         programId: number;

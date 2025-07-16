@@ -25,5 +25,10 @@ export declare class UserController {
      * Update user settings
      */
     static updateSettings(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
+    /**
+     * Get comprehensive user statistics
+     * GET /api/v1/users/statistics
+     */
+    static getUserStatistics(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
 }
 //# sourceMappingURL=userController.d.ts.map

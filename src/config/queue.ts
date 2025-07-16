@@ -56,7 +56,9 @@ export const QUEUE_NAMES = {
   DAILY_REPORTS: 'daily-reports',
   TIER_UPGRADE: 'tier-upgrade',
   MONTHLY_FEE_PROCESSING: 'monthly-fee-processing',
-  INVOICE_PROCESSING: 'invoice-processing'
+  INVOICE_PROCESSING: 'invoice-processing',
+  PASSWORD_RESET_CLEANUP: 'password-reset-cleanup',
+  EMAIL_VERIFICATION_CLEANUP: 'email-verification-cleanup'
 } as const;
 
 // Default job options
@@ -92,7 +94,9 @@ export const queues = {
   dailyReports: new Queue(QUEUE_NAMES.DAILY_REPORTS, { connection }),
   tierUpgrade: new Queue(QUEUE_NAMES.TIER_UPGRADE, { connection }),
   monthlyFeeProcessing: new Queue(QUEUE_NAMES.MONTHLY_FEE_PROCESSING, { connection }),
-  invoiceProcessing: new Queue(QUEUE_NAMES.INVOICE_PROCESSING, { connection })
+  invoiceProcessing: new Queue(QUEUE_NAMES.INVOICE_PROCESSING, { connection }),
+  passwordResetCleanup: new Queue(QUEUE_NAMES.PASSWORD_RESET_CLEANUP, { connection }),
+  emailVerificationCleanup: new Queue(QUEUE_NAMES.EMAIL_VERIFICATION_CLEANUP, { connection })
 };
 
 // Queue event monitoring

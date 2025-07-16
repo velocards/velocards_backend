@@ -12,15 +12,15 @@ export declare const updateProfileSchema: z.ZodObject<{
             postalCode: z.ZodOptional<z.ZodString>;
             country: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
+            state?: string | undefined;
             street?: string | undefined;
             city?: string | undefined;
-            state?: string | undefined;
             postalCode?: string | undefined;
             country?: string | undefined;
         }, {
+            state?: string | undefined;
             street?: string | undefined;
             city?: string | undefined;
-            state?: string | undefined;
             postalCode?: string | undefined;
             country?: string | undefined;
         }>>;
@@ -28,9 +28,9 @@ export declare const updateProfileSchema: z.ZodObject<{
         firstName?: string | undefined;
         lastName?: string | undefined;
         address?: {
+            state?: string | undefined;
             street?: string | undefined;
             city?: string | undefined;
-            state?: string | undefined;
             postalCode?: string | undefined;
             country?: string | undefined;
         } | undefined;
@@ -40,9 +40,9 @@ export declare const updateProfileSchema: z.ZodObject<{
         firstName?: string | undefined;
         lastName?: string | undefined;
         address?: {
+            state?: string | undefined;
             street?: string | undefined;
             city?: string | undefined;
-            state?: string | undefined;
             postalCode?: string | undefined;
             country?: string | undefined;
         } | undefined;
@@ -52,9 +52,9 @@ export declare const updateProfileSchema: z.ZodObject<{
         firstName?: string | undefined;
         lastName?: string | undefined;
         address?: {
+            state?: string | undefined;
             street?: string | undefined;
             city?: string | undefined;
-            state?: string | undefined;
             postalCode?: string | undefined;
             country?: string | undefined;
         } | undefined;
@@ -64,9 +64,9 @@ export declare const updateProfileSchema: z.ZodObject<{
         firstName?: string | undefined;
         lastName?: string | undefined;
         address?: {
+            state?: string | undefined;
             street?: string | undefined;
             city?: string | undefined;
-            state?: string | undefined;
             postalCode?: string | undefined;
             country?: string | undefined;
         } | undefined;
@@ -78,9 +78,9 @@ export declare const updateProfileSchema: z.ZodObject<{
         firstName?: string | undefined;
         lastName?: string | undefined;
         address?: {
+            state?: string | undefined;
             street?: string | undefined;
             city?: string | undefined;
-            state?: string | undefined;
             postalCode?: string | undefined;
             country?: string | undefined;
         } | undefined;
@@ -92,9 +92,9 @@ export declare const updateProfileSchema: z.ZodObject<{
         firstName?: string | undefined;
         lastName?: string | undefined;
         address?: {
+            state?: string | undefined;
             street?: string | undefined;
             city?: string | undefined;
-            state?: string | undefined;
             postalCode?: string | undefined;
             country?: string | undefined;
         } | undefined;

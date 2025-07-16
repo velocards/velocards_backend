@@ -58,7 +58,7 @@ class EmailService {
                 }
             }
             if (attachments.length > 0) {
-                await this.sendEmail({
+                await this.sendEmailInternal({
                     to: emailData.user.email,
                     subject: template.subject,
                     html: template.htmlContent,
@@ -67,7 +67,7 @@ class EmailService {
                 });
             }
             else {
-                await this.sendEmail({
+                await this.sendEmailInternal({
                     to: emailData.user.email,
                     subject: template.subject,
                     html: template.htmlContent,
@@ -344,7 +344,7 @@ This is an automated email. Please do not reply to this message.
     /**
      * Send email using configured provider
      */
-    static async sendEmail(options) {
+    static async sendEmailInternal(options) {
         const fromEmail = env_1.env.INVOICE_FROM_EMAIL || 'invoices@velocards.com';
         const fromName = env_1.env.INVOICE_FROM_NAME || 'VeloCards Finance';
         const emailOptions = {
@@ -404,7 +404,7 @@ This is an automated email. Please do not reply to this message.
         if (!this.isReady()) {
             throw new errors_1.AppError('EMAIL_NOT_CONFIGURED', 'Email service not configured', 500);
         }
-        await this.sendEmail({
+        await this.sendEmailInternal({
             to,
             subject: 'VeloCards Email Service Test',
             html: `
@@ -425,6 +425,30 @@ Sent at: ${new Date().toISOString()}
       `
         });
         logger_1.default.info('Test email sent successfully', { to });
+    }
+    /**
+     * Public method to send email (for password reset and other services)
+     */
+    static async sendEmail(options) {
+        const fromEmail = options.from?.email || env_1.env.FROM_EMAIL || 'noreply@velocards.com';
+        const fromName = options.from?.name || env_1.env.FROM_NAME || 'VeloCards';
+        const emailOptions = {
+            to: options.to,
+            from: {
+                email: fromEmail,
+                name: fromName
+            },
+            subject: options.subject,
+            text: options.text,
+            html: options.html,
+            ...(options.attachments && { attachments: options.attachments })
+        };
+        await emailProvider_1.emailProvider.send(emailOptions);
+        logger_1.default.info('Email sent successfully', {
+            to: options.to,
+            subject: options.subject,
+            provider: emailProvider_1.emailProvider.getActiveProvider()
+        });
     }
 }
 exports.EmailService = EmailService;

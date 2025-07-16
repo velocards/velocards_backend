@@ -51,7 +51,10 @@ exports.PERMISSIONS = {
     SYSTEM_ADMIN: 'system:admin',
     MASTER_ACCOUNT: 'master:account',
     REPORTS_VIEW: 'reports:view',
-    REPORTS_GENERATE: 'reports:generate'
+    REPORTS_GENERATE: 'reports:generate',
+    // Announcement permissions
+    ANNOUNCEMENTS_READ: 'announcements:read',
+    ANNOUNCEMENTS_MANAGE: 'announcements:manage'
 };
 // Define available roles
 var UserRole;
@@ -92,7 +95,9 @@ exports.ROLE_PERMISSIONS = {
             // Invoice access
             exports.PERMISSIONS.INVOICES_READ,
             exports.PERMISSIONS.INVOICES_UPDATE,
-            exports.PERMISSIONS.INVOICES_SEND
+            exports.PERMISSIONS.INVOICES_SEND,
+            // Announcement access
+            exports.PERMISSIONS.ANNOUNCEMENTS_READ
         ]
     },
     [UserRole.ADMIN]: {
@@ -131,7 +136,9 @@ exports.ROLE_PERMISSIONS = {
             exports.PERMISSIONS.SYSTEM_ADMIN,
             exports.PERMISSIONS.MASTER_ACCOUNT,
             exports.PERMISSIONS.REPORTS_VIEW,
-            exports.PERMISSIONS.REPORTS_GENERATE
+            exports.PERMISSIONS.REPORTS_GENERATE,
+            exports.PERMISSIONS.ANNOUNCEMENTS_READ,
+            exports.PERMISSIONS.ANNOUNCEMENTS_MANAGE
         ]
     },
     [UserRole.SUPPORT]: {
@@ -147,7 +154,9 @@ exports.ROLE_PERMISSIONS = {
             // Support-specific permissions
             exports.PERMISSIONS.USERS_LIST,
             exports.PERMISSIONS.TRANSACTIONS_DISPUTE,
-            exports.PERMISSIONS.REPORTS_VIEW
+            exports.PERMISSIONS.REPORTS_VIEW,
+            // Announcement access
+            exports.PERMISSIONS.ANNOUNCEMENTS_READ
         ]
     }
 };

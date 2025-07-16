@@ -13,6 +13,7 @@ const tierService_1 = __importDefault(require("./tierService"));
 const errors_1 = require("../utils/errors");
 const roles_1 = require("../config/roles");
 const logger_1 = __importDefault(require("../utils/logger"));
+const database_1 = require("../config/database");
 class UserService {
     static async register(data) {
         // Check if email is available
@@ -70,6 +71,14 @@ class UserService {
             undefined // User agent would come from request
             );
             throw new errors_1.AuthenticationError('Invalid email or password');
+        }
+        // Check if email is verified
+        if (!user.email_verified) {
+            // Record login attempt with unverified email
+            await userRepository_1.UserRepository.recordAuthEvent(user.id, 'login_blocked_unverified_email', undefined, // IP address would come from request
+            undefined // User agent would come from request
+            );
+            throw new errors_1.AuthenticationError('Please verify your email before logging in');
         }
         // Record successful login
         await userRepository_1.UserRepository.recordAuthEvent(user.id, 'login_success', undefined, // IP address would come from request
@@ -282,6 +291,211 @@ class UserService {
                 ...(user.tier.features !== undefined && { features: user.tier.features })
             } : null,
             ...(user.tier_assigned_at !== undefined && { tierAssignedAt: user.tier_assigned_at })
+        };
+    }
+    /**
+     * Get comprehensive user statistics
+     */
+    static async getUserStatistics(userId) {
+        const user = await userRepository_1.UserRepository.findById(userId);
+        if (!user) {
+            throw new errors_1.NotFoundError('User');
+        }
+        const currentYear = new Date().getFullYear();
+        // Run all queries in parallel for performance
+        const [lifetimeDeposits, yearlyDeposits, lifetimeCardSpending, yearlyCardSpending, lifetimeFees, yearlyFees, activeCardsCount, tierInfo] = await Promise.all([
+            // Lifetime deposit statistics
+            this.getDepositStatistics(userId),
+            // Yearly deposit statistics
+            this.getDepositStatistics(userId, currentYear),
+            // Lifetime card spending statistics
+            this.getCardSpendingStatistics(userId),
+            // Yearly card spending statistics
+            this.getCardSpendingStatistics(userId, currentYear),
+            // Lifetime fees
+            this.getFeeStatistics(userId),
+            // Yearly fees
+            this.getFeeStatistics(userId, currentYear),
+            // Active cards count
+            this.getActiveCardsCount(userId),
+            // Tier information
+            this.getTierInfo(userId)
+        ]);
+        // Calculate totals
+        const lifetimeTotalFees = lifetimeFees.cardCreation + lifetimeFees.cardMonthly + lifetimeFees.deposit;
+        const yearlyTotalFees = yearlyFees.cardCreation + yearlyFees.cardMonthly + yearlyFees.deposit;
+        const yearlyTotalSpending = yearlyCardSpending.completed + yearlyTotalFees;
+        return {
+            lifetime: {
+                deposits: lifetimeDeposits,
+                cardSpending: lifetimeCardSpending,
+                fees: {
+                    ...lifetimeFees,
+                    total: lifetimeTotalFees
+                }
+            },
+            currentYear: {
+                year: currentYear,
+                deposits: yearlyDeposits,
+                cardSpending: yearlyCardSpending,
+                fees: {
+                    ...yearlyFees,
+                    total: yearlyTotalFees
+                },
+                totalSpending: yearlyTotalSpending
+            },
+            accountInfo: {
+                activeCardsCount,
+                currentTier: tierInfo.name,
+                tierLevel: tierInfo.level
+            }
+        };
+    }
+    static async getDepositStatistics(userId, year) {
+        let query = database_1.supabase
+            .from('crypto_transactions')
+            .select('fiat_amount, status, created_at')
+            .eq('user_id', userId)
+            .eq('type', 'deposit')
+            .in('status', ['completed', 'pending']);
+        const { data: deposits, error } = await query;
+        if (error) {
+            logger_1.default.error('Failed to fetch deposit statistics', { error, userId });
+            return { total: 0, pending: 0 };
+        }
+        // Filter by year if specified
+        const filteredDeposits = year && deposits ?
+            deposits.filter((d) => new Date(d.created_at).getFullYear() === year) :
+            deposits;
+        const total = filteredDeposits
+            ?.filter((d) => d.status === 'completed')
+            .reduce((sum, d) => sum + parseFloat(d.fiat_amount || '0'), 0) || 0;
+        const pending = filteredDeposits
+            ?.filter((d) => d.status === 'pending')
+            .reduce((sum, d) => sum + parseFloat(d.fiat_amount || '0'), 0) || 0;
+        return { total, pending };
+    }
+    static async getCardSpendingStatistics(userId, year) {
+        let query = database_1.supabase
+            .from('transactions')
+            .select('amount, status')
+            .eq('user_id', userId);
+        if (year) {
+            const startDate = new Date(year, 0, 1).toISOString();
+            const endDate = new Date(year, 11, 31, 23, 59, 59).toISOString();
+            query = query.gte('created_at', startDate).lte('created_at', endDate);
+        }
+        const { data: transactions, error } = await query;
+        if (error) {
+            logger_1.default.error('Failed to fetch card spending statistics', { error, userId });
+            return {
+                completed: 0,
+                pending: 0,
+                failed: 0,
+                reversed: 0,
+                netSpending: 0,
+                successRate: 0
+            };
+        }
+        const stats = {
+            completed: 0,
+            pending: 0,
+            failed: 0,
+            reversed: 0
+        };
+        transactions?.forEach((tx) => {
+            const amount = parseFloat(tx.amount || '0');
+            switch (tx.status) {
+                case 'completed':
+                    stats.completed += amount;
+                    break;
+                case 'pending':
+                    stats.pending += amount;
+                    break;
+                case 'failed':
+                    stats.failed += amount;
+                    break;
+                case 'reversed':
+                    stats.reversed += amount;
+                    break;
+            }
+        });
+        const netSpending = stats.completed - stats.reversed;
+        const totalAttempts = transactions?.length || 0;
+        const successCount = transactions?.filter((tx) => tx.status === 'completed').length || 0;
+        const successRate = totalAttempts > 0 ? (successCount / totalAttempts) * 100 : 0;
+        return {
+            ...stats,
+            netSpending,
+            successRate: Math.round(successRate * 100) / 100
+        };
+    }
+    static async getFeeStatistics(userId, year) {
+        // Get card creation fees
+        let cardQuery = database_1.supabase
+            .from('virtual_cards')
+            .select('creation_fee_amount')
+            .eq('user_id', userId);
+        if (year) {
+            const startDate = new Date(year, 0, 1).toISOString();
+            const endDate = new Date(year, 11, 31, 23, 59, 59).toISOString();
+            cardQuery = cardQuery.gte('created_at', startDate).lte('created_at', endDate);
+        }
+        const { data: cards } = await cardQuery;
+        const cardCreationFees = cards?.reduce((sum, card) => sum + parseFloat(card.creation_fee_amount || '0'), 0) || 0;
+        // Get monthly fees
+        let monthlyQuery = database_1.supabase
+            .from('card_monthly_fees')
+            .select('fee_amount')
+            .eq('user_id', userId)
+            .eq('status', 'charged');
+        if (year) {
+            monthlyQuery = monthlyQuery
+                .gte('billing_month', `${year}-01-01`)
+                .lte('billing_month', `${year}-12-31`);
+        }
+        const { data: monthlyFees } = await monthlyQuery;
+        const cardMonthlyFees = monthlyFees?.reduce((sum, fee) => sum + parseFloat(fee.fee_amount || '0'), 0) || 0;
+        // Get deposit fees from balance ledger
+        let depositFeeQuery = database_1.supabase
+            .from('user_balance_ledger')
+            .select('amount')
+            .eq('user_id', userId)
+            .eq('transaction_type', 'fee')
+            .or('reference_type.eq.deposit_fee,reference_type.eq.crypto_deposit_fee');
+        if (year) {
+            const startDate = new Date(year, 0, 1).toISOString();
+            const endDate = new Date(year, 11, 31, 23, 59, 59).toISOString();
+            depositFeeQuery = depositFeeQuery.gte('created_at', startDate).lte('created_at', endDate);
+        }
+        const { data: depositFees } = await depositFeeQuery;
+        const depositFeesTotal = depositFees?.reduce((sum, fee) => sum + Math.abs(parseFloat(fee.amount || '0')), 0) || 0;
+        return {
+            cardCreation: cardCreationFees,
+            cardMonthly: cardMonthlyFees,
+            deposit: depositFeesTotal
+        };
+    }
+    static async getActiveCardsCount(userId) {
+        const { count, error } = await database_1.supabase
+            .from('virtual_cards')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('status', 'active');
+        if (error) {
+            logger_1.default.error('Failed to get active cards count', { error, userId });
+            return 0;
+        }
+        return count || 0;
+    }
+    static async getTierInfo(userId) {
+        const user = await userRepository_1.UserRepository.findById(userId);
+        if (!user?.tier) {
+            return { name: 'Unverified', level: 0 };
+        }
+        return {
+            name: user.tier.display_name || user.tier.name,
+            level: user.tier.tier_level
         };
     }
 }

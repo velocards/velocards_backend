@@ -59,13 +59,16 @@ exports.env = (0, envalid_1.cleanEnv)(process.env, {
     // Invoice Email Configuration
     INVOICE_FROM_EMAIL: (0, envalid_1.email)({ default: 'invoices@velocards.com' }),
     INVOICE_FROM_NAME: (0, envalid_1.str)({ default: 'VeloCards Finance' }),
+    FRONTEND_URL: (0, envalid_1.url)({ default: "http://localhost:3000" }),
     // SMS Service (Optional for development)
     TWILIO_ACCOUNT_SID: (0, envalid_1.str)({ default: 'mock_twilio_sid' }),
     TWILIO_AUTH_TOKEN: (0, envalid_1.str)({ default: 'mock_twilio_token' }),
     TWILIO_PHONE_NUMBER: (0, envalid_1.str)({ default: '+1234567890' }),
     // Security
-    ENCRYPTION_KEY: (0, envalid_1.str)({ default: 'b8c6a9c87ab654c805140bd9cbef250645c03779ea81029c46bb71269682668c' }),
+    ENCRYPTION_KEY: (0, envalid_1.str)(),
     BCRYPT_ROUNDS: (0, envalid_1.num)({ default: 12 }),
+    // Cloudflare Turnstile
+    TURNSTILE_SECRET_KEY: (0, envalid_1.str)({ default: '' }),
     // Rate Limiting
     RATE_LIMIT_WINDOW_MS: (0, envalid_1.num)({ default: 900000 }), // 15 minutes
     RATE_LIMIT_MAX_REQUESTS: (0, envalid_1.num)({ default: 100 }),
@@ -77,6 +80,10 @@ exports.env = (0, envalid_1.cleanEnv)(process.env, {
     SENTRY_DSN: (0, envalid_1.str)({ default: '' }),
     // CORS
     ALLOWED_ORIGINS: (0, envalid_1.str)({ default: 'http://localhost:3000' }),
+    // Google OAuth Configuration
+    GOOGLE_CLIENT_ID: (0, envalid_1.str)({ default: '' }),
+    GOOGLE_CLIENT_SECRET: (0, envalid_1.str)({ default: '' }),
+    GOOGLE_REDIRECT_URI: (0, envalid_1.url)({ default: 'https://api.velocards.com/api/v1/auth/google/callback' }),
     // Feature Flags
     ENABLE_DEBUG_LOGS: (0, envalid_1.bool)({ default: false }),
     MOCK_EXTERNAL_APIS: (0, envalid_1.bool)({ default: false }),

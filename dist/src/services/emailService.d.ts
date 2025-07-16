@@ -18,7 +18,7 @@ export declare class EmailService {
     /**
      * Send email using configured provider
      */
-    private static sendEmail;
+    private static sendEmailInternal;
     /**
      * Log email sent to database
      */
@@ -31,5 +31,19 @@ export declare class EmailService {
      * Send test email (for setup verification)
      */
     static sendTestEmail(to: string): Promise<void>;
+    /**
+     * Public method to send email (for password reset and other services)
+     */
+    static sendEmail(options: {
+        to: string;
+        subject: string;
+        html: string;
+        text: string;
+        attachments?: any[];
+        from?: {
+            email: string;
+            name: string;
+        };
+    }): Promise<void>;
 }
 //# sourceMappingURL=emailService.d.ts.map

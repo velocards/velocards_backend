@@ -1,4 +1,5 @@
 import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 import axios from 'axios';
 import logger from '../utils/logger';
 import { env } from '../config/env';
@@ -47,38 +48,51 @@ class SendGridProvider implements EmailProvider {
  */
 class ResendProvider implements EmailProvider {
   name = 'Resend';
-  private apiKey: string;
-  private apiUrl = 'https://api.resend.com/emails';
+  private resend: Resend | null = null;
 
   constructor() {
-    this.apiKey = process.env['RESEND_API_KEY'] || '';
+    const apiKey = env.RESEND_API_KEY || process.env['RESEND_API_KEY'] || '';
+    if (apiKey && apiKey !== '') {
+      this.resend = new Resend(apiKey);
+    }
   }
 
   isConfigured(): boolean {
-    return !!this.apiKey;
+    return !!this.resend;
   }
 
   async send(options: EmailOptions): Promise<void> {
-    const response = await axios.post(
-      this.apiUrl,
-      {
+    if (!this.resend) {
+      throw new Error('Resend API key not configured');
+    }
+
+    try {
+      const emailData: any = {
         from: `${options.from.name} <${options.from.email}>`,
         to: options.to,
         subject: options.subject,
         text: options.text,
-        html: options.html,
-        attachments: options.attachments
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+        html: options.html
+      };
 
-    if (response.status !== 200) {
-      throw new Error(`Resend API error: ${response.statusText}`);
+      if (options.attachments && options.attachments.length > 0) {
+        emailData.attachments = options.attachments.map(att => ({
+          filename: att.filename,
+          content: att.content,
+          content_type: att.type || 'application/octet-stream'
+        }));
+      }
+
+      const { data, error } = await this.resend.emails.send(emailData);
+
+      if (error) {
+        throw new Error(`Resend API error: ${error.message}`);
+      }
+
+      logger.debug('Email sent via Resend', { emailId: data?.id });
+    } catch (error) {
+      logger.error('Resend send error', error);
+      throw error;
     }
   }
 }
@@ -158,10 +172,10 @@ export class EmailProviderManager {
   constructor() {
     // Initialize providers in order of preference
     this.providers = [
+      new ResendProvider(),    // Preferred provider
       new SendGridProvider(),
-      new ResendProvider(),
       new BrevoProvider(),
-      new ConsoleProvider() // Fallback
+      new ConsoleProvider()    // Fallback
     ];
 
     // Select the first configured provider

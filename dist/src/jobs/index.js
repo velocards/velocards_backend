@@ -18,6 +18,8 @@ const sessionMonitoringProcessor_1 = require("./processors/sessionMonitoringProc
 const tierUpgradeProcessor_1 = require("./processors/tierUpgradeProcessor");
 const monthlyFeeProcessor_1 = require("./processors/monthlyFeeProcessor");
 const invoiceProcessor_1 = require("./processors/invoiceProcessor");
+const passwordResetCleanupProcessor_1 = require("./processors/passwordResetCleanupProcessor");
+const emailVerificationCleanupProcessor_1 = require("./processors/emailVerificationCleanupProcessor");
 const jobScheduler_1 = require("./schedulers/jobScheduler");
 const queue_1 = require("../config/queue");
 const logger_1 = __importDefault(require("../utils/logger"));
@@ -42,7 +44,9 @@ async function startJobWorkers() {
             (0, sessionMonitoringProcessor_1.createSessionMonitoringWorker)(),
             (0, tierUpgradeProcessor_1.createTierUpgradeWorker)(),
             (0, monthlyFeeProcessor_1.createMonthlyFeeWorker)(),
-            (0, invoiceProcessor_1.createInvoiceWorker)()
+            (0, invoiceProcessor_1.createInvoiceWorker)(),
+            (0, passwordResetCleanupProcessor_1.createPasswordResetCleanupWorker)(),
+            (0, emailVerificationCleanupProcessor_1.createEmailVerificationCleanupWorker)()
         ];
         // Create queue event listeners for monitoring
         queueEvents = Object.values(queue_1.QUEUE_NAMES).map(queueName => (0, queue_1.createQueueEvents)(queueName));

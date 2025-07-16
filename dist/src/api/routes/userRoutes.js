@@ -19,5 +19,7 @@ router.get('/balance/available', (0, authorize_1.authorize)(roles_1.PERMISSIONS.
 router.get('/balance/history', (0, authorize_1.authorize)(roles_1.PERMISSIONS.BALANCE_READ), (0, validate_1.validate)(userValidators_1.balanceHistoryQuerySchema), userController_1.UserController.getBalanceHistory);
 // Settings routes
 router.put('/settings', (0, authorize_1.authorize)(roles_1.PERMISSIONS.SETTINGS_UPDATE), (0, validate_1.validate)(userValidators_1.updateSettingsSchema), userController_1.UserController.updateSettings);
+// Statistics routes
+router.get('/statistics', (0, authorize_1.authorize)(roles_1.PERMISSIONS.PROFILE_READ), userController_1.UserController.getUserStatistics);
 exports.default = router;
 //# sourceMappingURL=userRoutes.js.map

@@ -85,6 +85,8 @@ export declare class CryptoRepository {
         orders: XMoneyOrder[];
         total: number;
     }>;
+    static findExpiredXMoneyOrders(cutoffTime: Date): Promise<XMoneyOrder[]>;
+    static markOrderAsExpired(orderId: string): Promise<void>;
     static createTransaction(txData: Partial<CryptoTransaction>): Promise<CryptoTransaction>;
     static getTransactionById(transactionId: string): Promise<CryptoTransaction | null>;
     static getTransactionsByOrderId(orderId: string): Promise<CryptoTransaction[]>;

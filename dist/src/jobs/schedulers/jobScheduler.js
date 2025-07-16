@@ -58,6 +58,15 @@ async function initializeScheduledJobs() {
         // Monthly fee processing - at 2 AM on the 1st of every month
         await (0, queue_1.addRecurringJob)(queue_1.queues.monthlyFeeProcessing, 'scheduled-monthly-fee-processing', { type: 'process_all_users' }, '0 2 1 * *' // At 02:00 on day 1 of every month
         );
+        // Invoice event processing - every minute
+        await (0, queue_1.addRecurringJob)(queue_1.queues.invoiceProcessing, 'scheduled-invoice-processing', { type: 'process_events', batchSize: 100 }, '* * * * *' // Every minute
+        );
+        // Password reset token cleanup - every 4 hours
+        await (0, queue_1.addRecurringJob)(queue_1.queues.passwordResetCleanup, 'scheduled-password-reset-cleanup', { cleanupExpiredTokens: true }, '0 */4 * * *' // Every 4 hours
+        );
+        // Email verification token cleanup - every 6 hours
+        await (0, queue_1.addRecurringJob)(queue_1.queues.emailVerificationCleanup, 'scheduled-email-verification-cleanup', { timestamp: new Date().toISOString() }, '0 */6 * * *' // Every 6 hours
+        );
         logger_1.default.info('All scheduled jobs initialized successfully');
     }
     catch (error) {

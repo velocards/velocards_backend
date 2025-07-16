@@ -14,6 +14,8 @@ export declare const QUEUE_NAMES: {
     readonly TIER_UPGRADE: "tier-upgrade";
     readonly MONTHLY_FEE_PROCESSING: "monthly-fee-processing";
     readonly INVOICE_PROCESSING: "invoice-processing";
+    readonly PASSWORD_RESET_CLEANUP: "password-reset-cleanup";
+    readonly EMAIL_VERIFICATION_CLEANUP: "email-verification-cleanup";
 };
 export declare const DEFAULT_JOB_OPTIONS: {
     attempts: number;
@@ -44,6 +46,8 @@ export declare const queues: {
     tierUpgrade: Queue<any, any, string, any, any, string>;
     monthlyFeeProcessing: Queue<any, any, string, any, any, string>;
     invoiceProcessing: Queue<any, any, string, any, any, string>;
+    passwordResetCleanup: Queue<any, any, string, any, any, string>;
+    emailVerificationCleanup: Queue<any, any, string, any, any, string>;
 };
 export declare const createQueueEvents: (queueName: string) => QueueEvents;
 export declare const addRecurringJob: (queue: Queue, jobName: string, data: any, cronPattern: string) => Promise<void>;

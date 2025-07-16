@@ -195,6 +195,40 @@ export class CryptoRepository {
     }
   }
 
+  // Find expired orders in xmoney_orders table
+  static async findExpiredXMoneyOrders(cutoffTime: Date): Promise<XMoneyOrder[]> {
+    try {
+      const { data, error } = await supabase
+        .from('xmoney_orders')
+        .select('*')
+        .eq('status', 'pending')
+        .lt('created_at', cutoffTime.toISOString())
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      throw new DatabaseError('Failed to find expired xmoney orders', error);
+    }
+  }
+
+  // Mark xmoney order as expired
+  static async markOrderAsExpired(orderId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('xmoney_orders')
+        .update({
+          status: 'expired',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', orderId);
+
+      if (error) throw error;
+    } catch (error: any) {
+      throw new DatabaseError('Failed to mark order as expired', error);
+    }
+  }
+
   // Crypto Transactions
   static async createTransaction(txData: Partial<CryptoTransaction>): Promise<CryptoTransaction> {
     try {

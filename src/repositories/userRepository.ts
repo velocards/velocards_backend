@@ -440,4 +440,78 @@ import { v4 as uuidv4 } from 'uuid';
         logger.error('Unexpected error in recordAuthEvent:', error);
       }
     }
+
+  static async updateKYCStatus(
+    userId: string,
+    status: 'pending' | 'approved' | 'rejected' | 'expired',
+    additionalData?: {
+      kyc_applicant_id?: string;
+      kyc_review_answer?: string;
+      kyc_review_status?: string;
+      kyc_completed_at?: string | null;
+      kyc_reset_at?: string;
+    }
+  ): Promise<void> {
+    try {
+      // Prepare update data
+      const updateData: any = {
+        kyc_status: status,
+        updated_at: new Date().toISOString()
+      };
+
+      // Add kyc_completed_at if status is approved
+      if (status === 'approved' && additionalData?.kyc_completed_at) {
+        updateData.kyc_completed_at = additionalData.kyc_completed_at;
+      }
+
+      // Update user profile
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .update(updateData)
+        .eq('id', userId);
+
+      if (profileError) {
+        logger.error('Error updating KYC status:', profileError);
+        throw new InternalError('Failed to update KYC status');
+      }
+
+      // Update metadata if additional data provided
+      if (additionalData && Object.keys(additionalData).length > 0) {
+        // First get current metadata
+        const { data: user, error: fetchError } = await supabase
+          .from('user_profiles')
+          .select('metadata')
+          .eq('id', userId)
+          .single();
+
+        if (fetchError) {
+          logger.error('Error fetching user metadata:', fetchError);
+          throw new InternalError('Failed to fetch user metadata');
+        }
+
+        // Merge with new data
+        const updatedMetadata = {
+          ...user.metadata,
+          ...additionalData
+        };
+
+        // Update metadata
+        const { error: metadataError } = await supabase
+          .from('user_profiles')
+          .update({ metadata: updatedMetadata })
+          .eq('id', userId);
+
+        if (metadataError) {
+          logger.error('Error updating user metadata:', metadataError);
+          throw new InternalError('Failed to update user metadata');
+        }
+      }
+
+      logger.info('KYC status updated successfully:', { userId, status });
+    } catch (error) {
+      if (error instanceof InternalError) throw error;
+      logger.error('Unexpected error in updateKYCStatus:', error);
+      throw new InternalError('Failed to update KYC status');
+    }
+  }
   }

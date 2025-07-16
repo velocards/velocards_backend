@@ -57,7 +57,9 @@ exports.QUEUE_NAMES = {
     DAILY_REPORTS: 'daily-reports',
     TIER_UPGRADE: 'tier-upgrade',
     MONTHLY_FEE_PROCESSING: 'monthly-fee-processing',
-    INVOICE_PROCESSING: 'invoice-processing'
+    INVOICE_PROCESSING: 'invoice-processing',
+    PASSWORD_RESET_CLEANUP: 'password-reset-cleanup',
+    EMAIL_VERIFICATION_CLEANUP: 'email-verification-cleanup'
 };
 // Default job options
 exports.DEFAULT_JOB_OPTIONS = {
@@ -90,7 +92,9 @@ exports.queues = {
     dailyReports: new bullmq_1.Queue(exports.QUEUE_NAMES.DAILY_REPORTS, { connection }),
     tierUpgrade: new bullmq_1.Queue(exports.QUEUE_NAMES.TIER_UPGRADE, { connection }),
     monthlyFeeProcessing: new bullmq_1.Queue(exports.QUEUE_NAMES.MONTHLY_FEE_PROCESSING, { connection }),
-    invoiceProcessing: new bullmq_1.Queue(exports.QUEUE_NAMES.INVOICE_PROCESSING, { connection })
+    invoiceProcessing: new bullmq_1.Queue(exports.QUEUE_NAMES.INVOICE_PROCESSING, { connection }),
+    passwordResetCleanup: new bullmq_1.Queue(exports.QUEUE_NAMES.PASSWORD_RESET_CLEANUP, { connection }),
+    emailVerificationCleanup: new bullmq_1.Queue(exports.QUEUE_NAMES.EMAIL_VERIFICATION_CLEANUP, { connection })
 };
 // Queue event monitoring
 const createQueueEvents = (queueName) => {

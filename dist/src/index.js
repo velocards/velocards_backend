@@ -60,6 +60,8 @@ const cryptoRoutes_1 = __importDefault(require("./api/routes/cryptoRoutes"));
 const webhookRoutes_1 = __importDefault(require("./api/routes/webhookRoutes"));
 const tierRoutes_1 = __importDefault(require("./api/routes/tierRoutes"));
 const invoiceRoutes_1 = __importDefault(require("./api/routes/invoiceRoutes"));
+const kycRoutes_1 = __importDefault(require("./api/routes/kycRoutes"));
+const announcementRoutes_1 = __importDefault(require("./api/routes/announcementRoutes"));
 // Import job workers
 const jobs_1 = require("./jobs");
 // Services will be imported dynamically as needed
@@ -96,6 +98,8 @@ app.use('/api/v1/transactions', transactionRoutes_1.default);
 app.use('/api/v1/crypto', cryptoRoutes_1.default);
 app.use('/api/v1/tiers', tierRoutes_1.default);
 app.use('/api/v1/invoices', invoiceRoutes_1.default);
+app.use('/api/v1/kyc', kycRoutes_1.default);
+app.use('/api/v1/announcements', announcementRoutes_1.default);
 // Webhook routes (no /api/v1 prefix, mounted directly)
 app.use('/webhooks', webhookRoutes_1.default);
 // 404 handler
@@ -130,7 +134,10 @@ async function startServer() {
             logger_1.default.info(`Crypto endpoints available at: http://localhost:${PORT}/api/v1/crypto`);
             logger_1.default.info(`Tier endpoints available at: http://localhost:${PORT}/api/v1/tiers`);
             logger_1.default.info(`Invoice endpoints available at: http://localhost:${PORT}/api/v1/invoices`);
+            logger_1.default.info(`KYC endpoints available at: http://localhost:${PORT}/api/v1/kyc`);
+            logger_1.default.info(`Announcement endpoints available at: http://localhost:${PORT}/api/v1/announcements`);
             logger_1.default.info(`Webhook endpoint available at: http://localhost:${PORT}/webhooks/xmoney`);
+            logger_1.default.info(`KYC webhook available at: http://localhost:${PORT}/api/v1/kyc/webhook`);
             logger_1.default.info(`✅ Background job workers started`);
         });
     }

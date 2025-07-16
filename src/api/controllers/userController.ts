@@ -156,4 +156,22 @@ export class UserController {
       next(error);
     }
   }
+
+  /**
+   * Get comprehensive user statistics
+   * GET /api/v1/users/statistics
+   */
+  static async getUserStatistics(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.id;
+      
+      logger.info('Fetching comprehensive user statistics', { userId });
+      
+      const statistics = await UserService.getUserStatistics(userId);
+      
+      sendSuccess(res, statistics);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

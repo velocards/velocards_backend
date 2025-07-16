@@ -32,6 +32,17 @@ class PasswordService {
             throw new errors_1.ValidationError('Password must contain at least one special character (!@#$%^&*)');
         }
     }
+    static generateRandomPassword() {
+        // Generate a secure random password for OAuth users
+        const length = 32;
+        const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+        let password = '';
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * charset.length);
+            password += charset[randomIndex];
+        }
+        return password;
+    }
 }
 exports.PasswordService = PasswordService;
 //# sourceMappingURL=passwordService.js.map

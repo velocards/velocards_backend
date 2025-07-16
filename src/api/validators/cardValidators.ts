@@ -134,3 +134,24 @@ export const cardTransactionsQuerySchema = z.object({
       .default('20')
   })
 });
+
+// Create card session schema
+export const createCardSessionSchema = z.object({
+  params: z.object({
+    cardId: z.string().uuid('Invalid card ID format')
+  }),
+  body: z.object({
+    purpose: z.enum(['view_pan', 'view_cvv', 'view_full'], {
+      errorMap: () => ({ message: 'Purpose must be one of: view_pan, view_cvv, view_full' })
+    })
+  })
+});
+
+// Get secure card details schema
+export const getSecureCardDetailsSchema = z.object({
+  body: z.object({
+    sessionId: z.string().uuid('Invalid session ID format'),
+    token: z.string().min(64).max(64, 'Invalid token format'),
+    field: z.string().optional() // Not used but kept for future flexibility
+  })
+});

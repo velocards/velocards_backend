@@ -3,6 +3,35 @@ import { Request } from 'express';
 import { env } from '../../config/env';
 import logger from '../../utils/logger';
 
+// Whitelisted IP for development/testing (bypasses all rate limits)
+const WHITELISTED_IP = '106.219.163.143'; // Your current IP
+
+// Function to check if request should skip rate limiting
+function shouldSkipRateLimit(req: Request): boolean {
+  const clientIP = req.ip || req.connection.remoteAddress || '';
+  const forwarded = req.headers['x-forwarded-for'] as string;
+  
+  // Skip in test environment
+  if (env.NODE_ENV === 'test') {
+    return true;
+  }
+  
+  // Check direct IP
+  if (clientIP === WHITELISTED_IP || clientIP === `::ffff:${WHITELISTED_IP}`) {
+    return true;
+  }
+  
+  // Check forwarded IPs
+  if (forwarded) {
+    const ips = forwarded.split(',').map(ip => ip.trim());
+    if (ips.includes(WHITELISTED_IP)) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
 // Rate limiter configurations for different endpoint types
 
 // Default rate limiter for general API endpoints
@@ -20,7 +49,7 @@ export const defaultLimiter = rateLimit({
       }
     });
   },
-  skip: (_req) => env.NODE_ENV === 'test' // Skip rate limiting in test environment
+  skip: (req) => shouldSkipRateLimit(req) // Skip rate limiting for whitelisted IPs and test environment
 });
 
 // Strict rate limiter for authentication endpoints
@@ -39,7 +68,7 @@ export const authLimiter = rateLimit({
       }
     });
   },
-  skip: (_req) => env.NODE_ENV === 'test'
+  skip: (req) => shouldSkipRateLimit(req)
 });
 
 // Very strict rate limiter for sensitive operations (password reset, etc.)
@@ -58,7 +87,7 @@ export const strictLimiter = rateLimit({
       }
     });
   },
-  skip: (_req) => env.NODE_ENV === 'test'
+  skip: (req) => shouldSkipRateLimit(req)
 });
 
 // Card creation rate limiter - per user, not per IP
@@ -80,7 +109,7 @@ export const cardCreationLimiter = rateLimit({
       }
     });
   },
-  skip: (_req) => env.NODE_ENV === 'test'
+  skip: (req) => shouldSkipRateLimit(req)
 });
 
 // Transaction rate limiter - more lenient for viewing
@@ -101,7 +130,7 @@ export const transactionReadLimiter = rateLimit({
       }
     });
   },
-  skip: (_req) => env.NODE_ENV === 'test'
+  skip: (req) => shouldSkipRateLimit(req)
 });
 
 // Withdrawal/sensitive financial operations limiter
@@ -127,7 +156,7 @@ export const withdrawalLimiter = rateLimit({
       }
     });
   },
-  skip: (_req) => env.NODE_ENV === 'test'
+  skip: (req) => shouldSkipRateLimit(req)
 });
 
 // API-wide rate limiter to prevent DDoS
@@ -145,5 +174,58 @@ export const globalLimiter = rateLimit({
       }
     });
   },
-  skip: (_req) => env.NODE_ENV === 'test'
+  skip: (req) => shouldSkipRateLimit(req)
 });
+
+// KYC operations rate limiter
+export const kycLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 KYC operations per 15 minutes
+  keyGenerator: (req: Request) => {
+    return (req as any).user?.sub || req.ip || 'unknown';
+  },
+  skipSuccessfulRequests: false,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    res.status(429).json({
+      success: false,
+      error: {
+        code: 'KYC_RATE_LIMIT_EXCEEDED',
+        message: 'Too many KYC verification attempts, please try again later'
+      }
+    });
+  },
+  skip: (req) => shouldSkipRateLimit(req)
+});
+
+// Webhook rate limiter - more lenient for external services
+export const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100, // 100 webhook calls per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    res.status(429).json({
+      success: false,
+      error: {
+        code: 'WEBHOOK_RATE_LIMIT_EXCEEDED',
+        message: 'Too many webhook requests'
+      }
+    });
+  },
+  skip: (req) => shouldSkipRateLimit(req)
+});
+
+// Export grouped rate limiters for easier use in routes
+export const rateLimiter = {
+  default: defaultLimiter,
+  auth: authLimiter,
+  strict: strictLimiter,
+  cardCreation: cardCreationLimiter,
+  transactionRead: transactionReadLimiter,
+  withdrawal: withdrawalLimiter,
+  global: globalLimiter,
+  kyc: kycLimiter,
+  webhook: webhookLimiter
+};

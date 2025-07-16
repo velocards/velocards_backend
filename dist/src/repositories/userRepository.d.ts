@@ -60,5 +60,12 @@ export declare class UserRepository {
     static getPasswordHash(userId: string): Promise<string | null>;
     static updatePasswordHash(userId: string, newPasswordHash: string): Promise<void>;
     static recordAuthEvent(userId: string | null, eventType: string, ipAddress?: string, userAgent?: string, metadata?: any): Promise<void>;
+    static updateKYCStatus(userId: string, status: 'pending' | 'approved' | 'rejected' | 'expired', additionalData?: {
+        kyc_applicant_id?: string;
+        kyc_review_answer?: string;
+        kyc_review_status?: string;
+        kyc_completed_at?: string | null;
+        kyc_reset_at?: string;
+    }): Promise<void>;
 }
 //# sourceMappingURL=userRepository.d.ts.map

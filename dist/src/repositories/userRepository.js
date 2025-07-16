@@ -354,6 +354,62 @@ class UserRepository {
             logger_1.default.error('Unexpected error in recordAuthEvent:', error);
         }
     }
+    static async updateKYCStatus(userId, status, additionalData) {
+        try {
+            // Prepare update data
+            const updateData = {
+                kyc_status: status,
+                updated_at: new Date().toISOString()
+            };
+            // Add kyc_completed_at if status is approved
+            if (status === 'approved' && additionalData?.kyc_completed_at) {
+                updateData.kyc_completed_at = additionalData.kyc_completed_at;
+            }
+            // Update user profile
+            const { error: profileError } = await database_1.default
+                .from('user_profiles')
+                .update(updateData)
+                .eq('id', userId);
+            if (profileError) {
+                logger_1.default.error('Error updating KYC status:', profileError);
+                throw new errors_1.InternalError('Failed to update KYC status');
+            }
+            // Update metadata if additional data provided
+            if (additionalData && Object.keys(additionalData).length > 0) {
+                // First get current metadata
+                const { data: user, error: fetchError } = await database_1.default
+                    .from('user_profiles')
+                    .select('metadata')
+                    .eq('id', userId)
+                    .single();
+                if (fetchError) {
+                    logger_1.default.error('Error fetching user metadata:', fetchError);
+                    throw new errors_1.InternalError('Failed to fetch user metadata');
+                }
+                // Merge with new data
+                const updatedMetadata = {
+                    ...user.metadata,
+                    ...additionalData
+                };
+                // Update metadata
+                const { error: metadataError } = await database_1.default
+                    .from('user_profiles')
+                    .update({ metadata: updatedMetadata })
+                    .eq('id', userId);
+                if (metadataError) {
+                    logger_1.default.error('Error updating user metadata:', metadataError);
+                    throw new errors_1.InternalError('Failed to update user metadata');
+                }
+            }
+            logger_1.default.info('KYC status updated successfully:', { userId, status });
+        }
+        catch (error) {
+            if (error instanceof errors_1.InternalError)
+                throw error;
+            logger_1.default.error('Unexpected error in updateKYCStatus:', error);
+            throw new errors_1.InternalError('Failed to update KYC status');
+        }
+    }
 }
 exports.UserRepository = UserRepository;
 //# sourceMappingURL=userRepository.js.map

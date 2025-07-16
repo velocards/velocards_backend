@@ -120,5 +120,14 @@ export declare class UserService {
     static getBalanceHistory(userId: string, params: BalanceHistoryParams): Promise<BalanceHistoryResult>;
     static updateUserSettings(userId: string, settings: UserSettings): Promise<UserSettings>;
     private static formatUserResponse;
+    /**
+     * Get comprehensive user statistics
+     */
+    static getUserStatistics(userId: string): Promise<any>;
+    private static getDepositStatistics;
+    private static getCardSpendingStatistics;
+    private static getFeeStatistics;
+    private static getActiveCardsCount;
+    private static getTierInfo;
 }
 //# sourceMappingURL=userService.d.ts.map

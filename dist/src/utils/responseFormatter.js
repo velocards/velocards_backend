@@ -1,8 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendSuccess = sendSuccess;
+exports.formatResponse = formatResponse;
 exports.sendError = sendError;
 exports.sendPaginatedSuccess = sendPaginatedSuccess;
+exports.formatSuccessResponse = formatSuccessResponse;
+exports.formatErrorResponse = formatErrorResponse;
 function sendSuccess(res, data, statusCode = 200, meta) {
     const response = {
         success: true,
@@ -13,6 +16,16 @@ function sendSuccess(res, data, statusCode = 200, meta) {
         }
     };
     return res.status(statusCode).json(response);
+}
+function formatResponse(data, meta) {
+    return {
+        success: true,
+        data,
+        meta: {
+            timestamp: new Date().toISOString(),
+            ...meta
+        }
+    };
 }
 function sendError(res, code, message, statusCode = 400, details) {
     const response = {
@@ -37,5 +50,29 @@ function sendPaginatedSuccess(res, data, pagination, statusCode = 200) {
             totalPages
         }
     });
+}
+// Additional helper functions for better compatibility
+function formatSuccessResponse(data, meta) {
+    return {
+        success: true,
+        data,
+        meta: {
+            timestamp: new Date().toISOString(),
+            ...meta
+        }
+    };
+}
+function formatErrorResponse(code, message, details) {
+    return {
+        success: false,
+        error: {
+            code,
+            message,
+            details
+        },
+        meta: {
+            timestamp: new Date().toISOString()
+        }
+    };
 }
 //# sourceMappingURL=responseFormatter.js.map

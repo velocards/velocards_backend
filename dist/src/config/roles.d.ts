@@ -34,6 +34,8 @@ export declare const PERMISSIONS: {
     readonly MASTER_ACCOUNT: "master:account";
     readonly REPORTS_VIEW: "reports:view";
     readonly REPORTS_GENERATE: "reports:generate";
+    readonly ANNOUNCEMENTS_READ: "announcements:read";
+    readonly ANNOUNCEMENTS_MANAGE: "announcements:manage";
 };
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
 export declare enum UserRole {

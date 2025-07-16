@@ -57,4 +57,11 @@ router.put(
   UserController.updateSettings
 );
 
+// Statistics routes
+router.get(
+  '/statistics',
+  authorize(PERMISSIONS.PROFILE_READ),
+  UserController.getUserStatistics
+);
+
 export default router;

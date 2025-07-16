@@ -136,6 +136,21 @@ class UserController {
             next(error);
         }
     }
+    /**
+     * Get comprehensive user statistics
+     * GET /api/v1/users/statistics
+     */
+    static async getUserStatistics(req, res, next) {
+        try {
+            const userId = req.user.id;
+            logger_1.default.info('Fetching comprehensive user statistics', { userId });
+            const statistics = await userService_1.UserService.getUserStatistics(userId);
+            (0, responseFormatter_1.sendSuccess)(res, statistics);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
 }
 exports.UserController = UserController;
 //# sourceMappingURL=userController.js.map

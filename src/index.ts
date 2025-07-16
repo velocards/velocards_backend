@@ -11,6 +11,15 @@ import dotenv from 'dotenv';
   import { requestId } from './api/middlewares/requestId';
   import { errorHandler } from './api/middlewares/errorHandler';
   import { globalLimiter } from './api/middlewares/rateLimiter';
+  import { csrfProtection } from './api/middlewares/csrf';
+  import { sanitizeInput } from './api/middlewares/sanitize';
+  import { auditLogger } from './api/middlewares/auditLogger';
+  import { authenticate } from './api/middlewares/auth';
+  import { authorize } from './api/middlewares/authorize';
+  import { validate } from './api/middlewares/validate';
+  import { CardController } from './api/controllers/cardController';
+  import { getSecureCardDetailsSchema } from './api/validators/cardValidators';
+  import { PERMISSIONS } from './config/roles';
   import logger from './utils/logger';
   import { sendSuccess } from './utils/responseFormatter';
 
@@ -23,6 +32,8 @@ import dotenv from 'dotenv';
   import webhookRoutes from './api/routes/webhookRoutes';
   import tierRoutes from './api/routes/tierRoutes';
   import invoiceRoutes from './api/routes/invoiceRoutes';
+  import kycRoutes from './api/routes/kycRoutes';
+  import announcementRoutes from './api/routes/announcementRoutes';
 
   // Import job workers
   import { startJobWorkers, stopJobWorkers } from './jobs';
@@ -37,17 +48,65 @@ import dotenv from 'dotenv';
   // Global rate limiter (early in the middleware chain)
   app.use(globalLimiter);
 
-  // Basic middleware
-  app.use(helmet());
+  // Security headers with enhanced configuration
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://challenges.cloudflare.com"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", ...env.ALLOWED_ORIGINS.split(',')],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["https://challenges.cloudflare.com"],
+        upgradeInsecureRequests: env.NODE_ENV === 'production' ? [] : null
+      }
+    },
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true
+    },
+    frameguard: {
+      action: 'deny'
+    },
+    referrerPolicy: {
+      policy: 'strict-origin-when-cross-origin'
+    }
+  }));
+  
+  // Additional security headers
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+    
+    // Remove fingerprinting headers
+    res.removeHeader('X-Powered-By');
+    
+    next();
+  });
+  
   app.use(cors({
     origin: env.ALLOWED_ORIGINS.split(','),
-    credentials: true
+    credentials: true,
+    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
   }));
   app.use(compression());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
   app.use(morgan('combined'));
+  
+  // Security middleware - sanitize all input
+  app.use(sanitizeInput);
+  
+  // Audit logging middleware
+  app.use(auditLogger());
 
   // Health check endpoint
   app.get('/health', async (_req, res) => {
@@ -61,15 +120,26 @@ import dotenv from 'dotenv';
 
   // API Routes
   app.use('/api/v1/auth', authRoutes);
-  app.use('/api/v1/users', userRoutes);
-  app.use('/api/v1/cards', cardRoutes);
-  app.use('/api/v1/transactions', transactionRoutes);
-  app.use('/api/v1/crypto', cryptoRoutes);
-  app.use('/api/v1/tiers', tierRoutes);
-  app.use('/api/v1/invoices', invoiceRoutes);
+  app.use('/api/v1/users', csrfProtection, userRoutes);
+  app.use('/api/v1/cards', csrfProtection, cardRoutes);
+  app.use('/api/v1/transactions', csrfProtection, transactionRoutes);
+  app.use('/api/v1/crypto', csrfProtection, cryptoRoutes);
+  app.use('/api/v1/tiers', csrfProtection, tierRoutes);
+  app.use('/api/v1/invoices', csrfProtection, invoiceRoutes);
+  app.use('/api/v1/kyc', csrfProtection, kycRoutes);
+  app.use('/api/v1/announcements', csrfProtection, announcementRoutes);
   
-  // Webhook routes (no /api/v1 prefix, mounted directly)
+  // Webhook routes (no /api/v1 prefix, mounted directly, no CSRF)
   app.use('/webhooks', webhookRoutes);
+
+  // Special secure endpoint expected by frontend
+  app.post('/api/v1/secure/card-details',
+    csrfProtection,
+    authenticate,
+    authorize(PERMISSIONS.CARDS_READ),
+    validate(getSecureCardDetailsSchema),
+    CardController.getSecureCardDetails
+  );
 
   // 404 handler
   app.use((_req, res) => {
@@ -108,7 +178,10 @@ import dotenv from 'dotenv';
         logger.info(`Crypto endpoints available at: http://localhost:${PORT}/api/v1/crypto`);
         logger.info(`Tier endpoints available at: http://localhost:${PORT}/api/v1/tiers`);
         logger.info(`Invoice endpoints available at: http://localhost:${PORT}/api/v1/invoices`);
+        logger.info(`KYC endpoints available at: http://localhost:${PORT}/api/v1/kyc`);
+        logger.info(`Announcement endpoints available at: http://localhost:${PORT}/api/v1/announcements`);
         logger.info(`Webhook endpoint available at: http://localhost:${PORT}/webhooks/xmoney`);
+        logger.info(`KYC webhook available at: http://localhost:${PORT}/api/v1/kyc/webhook`);
         logger.info(`✅ Background job workers started`);
       });
     } catch (error) {

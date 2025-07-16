@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.emailProvider = exports.EmailProviderManager = void 0;
 const mail_1 = __importDefault(require("@sendgrid/mail"));
+const resend_1 = require("resend");
 const axios_1 = __importDefault(require("axios"));
 const logger_1 = __importDefault(require("../utils/logger"));
 const env_1 = require("../config/env");
@@ -30,30 +31,44 @@ class SendGridProvider {
  */
 class ResendProvider {
     name = 'Resend';
-    apiKey;
-    apiUrl = 'https://api.resend.com/emails';
+    resend = null;
     constructor() {
-        this.apiKey = process.env['RESEND_API_KEY'] || '';
+        const apiKey = env_1.env.RESEND_API_KEY || process.env['RESEND_API_KEY'] || '';
+        if (apiKey && apiKey !== '') {
+            this.resend = new resend_1.Resend(apiKey);
+        }
     }
     isConfigured() {
-        return !!this.apiKey;
+        return !!this.resend;
     }
     async send(options) {
-        const response = await axios_1.default.post(this.apiUrl, {
-            from: `${options.from.name} <${options.from.email}>`,
-            to: options.to,
-            subject: options.subject,
-            text: options.text,
-            html: options.html,
-            attachments: options.attachments
-        }, {
-            headers: {
-                'Authorization': `Bearer ${this.apiKey}`,
-                'Content-Type': 'application/json'
+        if (!this.resend) {
+            throw new Error('Resend API key not configured');
+        }
+        try {
+            const emailData = {
+                from: `${options.from.name} <${options.from.email}>`,
+                to: options.to,
+                subject: options.subject,
+                text: options.text,
+                html: options.html
+            };
+            if (options.attachments && options.attachments.length > 0) {
+                emailData.attachments = options.attachments.map(att => ({
+                    filename: att.filename,
+                    content: att.content,
+                    content_type: att.type || 'application/octet-stream'
+                }));
             }
-        });
-        if (response.status !== 200) {
-            throw new Error(`Resend API error: ${response.statusText}`);
+            const { data, error } = await this.resend.emails.send(emailData);
+            if (error) {
+                throw new Error(`Resend API error: ${error.message}`);
+            }
+            logger_1.default.debug('Email sent via Resend', { emailId: data?.id });
+        }
+        catch (error) {
+            logger_1.default.error('Resend send error', error);
+            throw error;
         }
     }
 }
@@ -119,8 +134,8 @@ class EmailProviderManager {
     constructor() {
         // Initialize providers in order of preference
         this.providers = [
+            new ResendProvider(), // Preferred provider
             new SendGridProvider(),
-            new ResendProvider(),
             new BrevoProvider(),
             new ConsoleProvider() // Fallback
         ];

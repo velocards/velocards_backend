@@ -41,6 +41,7 @@ const bullmq_1 = require("bullmq");
 const queue_1 = require("../../config/queue");
 const redis_1 = require("../../config/redis");
 const cryptoTransactionRepository_1 = require("../../repositories/cryptoTransactionRepository");
+const cryptoRepository_1 = require("../../repositories/cryptoRepository");
 const logger_1 = __importDefault(require("../../utils/logger"));
 const createCryptoOrderCheckWorker = () => {
     const worker = new bullmq_1.Worker(queue_1.QUEUE_NAMES.CRYPTO_ORDER_CHECK, async (job) => {
@@ -56,6 +57,7 @@ const createCryptoOrderCheckWorker = () => {
             const results = {
                 stuckOrders: 0,
                 expiredOrders: 0,
+                expiredXMoneyOrders: 0,
                 retriedOrders: 0,
                 notifiedUsers: 0,
                 errors: 0
@@ -115,6 +117,47 @@ const createCryptoOrderCheckWorker = () => {
                     catch (error) {
                         logger_1.default.error('Failed to process expired order', {
                             orderId: order.xmoney_payment_id,
+                            error: error.message
+                        });
+                        results.errors++;
+                    }
+                }
+            }
+            // Also check for expired orders in xmoney_orders table
+            if (cleanupExpiredOrders) {
+                const expiredCutoff = new Date();
+                expiredCutoff.setDate(expiredCutoff.getDate() - maxOrderAgeDays);
+                const expiredXMoneyOrders = await cryptoRepository_1.CryptoRepository.findExpiredXMoneyOrders(expiredCutoff);
+                results.expiredXMoneyOrders = expiredXMoneyOrders.length;
+                logger_1.default.info(`Found ${expiredXMoneyOrders.length} expired xmoney orders`);
+                for (const order of expiredXMoneyOrders) {
+                    try {
+                        // Mark as expired
+                        await cryptoRepository_1.CryptoRepository.markOrderAsExpired(order.id);
+                        // Log the expiration
+                        logger_1.default.info('Marked xmoney order as expired', {
+                            orderId: order.id,
+                            orderReference: order.order_reference,
+                            userId: order.user_id,
+                            amount: order.amount,
+                            createdAt: order.created_at,
+                            daysOld: Math.floor((Date.now() - new Date(order.created_at).getTime()) / (1000 * 60 * 60 * 24))
+                        });
+                        // Notify user about expired order (optional)
+                        const { queues } = await Promise.resolve().then(() => __importStar(require('../../config/queue')));
+                        await queues.emailNotifications.add('deposit-order-expired', {
+                            userId: order.user_id,
+                            orderReference: order.order_reference,
+                            amount: order.amount,
+                            currency: order.currency,
+                            createdAt: order.created_at
+                        });
+                        results.notifiedUsers++;
+                    }
+                    catch (error) {
+                        logger_1.default.error('Failed to process expired xmoney order', {
+                            orderId: order.id,
+                            orderReference: order.order_reference,
                             error: error.message
                         });
                         results.errors++;
