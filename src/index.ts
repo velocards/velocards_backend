@@ -41,6 +41,7 @@ import dotenv from 'dotenv';
   import kycRoutes from './api/routes/kycRoutes';
   import announcementRoutes from './api/routes/announcementRoutes';
   import bullDashboard from './api/routes/bullDashboard';
+  import docsRoutes from './api/routes/docsRoutes';
 
   // Import job workers
   import { startJobWorkers, stopJobWorkers } from './jobs';
@@ -144,6 +145,9 @@ import dotenv from 'dotenv';
   
   // Admin dashboard for monitoring queues (protected by auth)
   app.use('/admin/queues', bullDashboard);
+  
+  // API Documentation (Swagger UI)
+  app.use('/api/docs', docsRoutes);
 
   // Special secure endpoint expected by frontend
   app.post('/api/v1/secure/card-details',

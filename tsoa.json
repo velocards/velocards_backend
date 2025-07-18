@@ -1,0 +1,52 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/api/controllers/**/*.ts"],
+  "spec": {
+    "outputDirectory": "src/swagger",
+    "specVersion": 3,
+    "info": {
+      "title": "VeloCards API",
+      "version": "1.0.0",
+      "description": "Virtual card management and crypto payment platform API",
+      "contact": {
+        "name": "VeloCards Support",
+        "email": "support@velocards.com",
+        "url": "https://velocards.com"
+      },
+      "license": {
+        "name": "Proprietary"
+      }
+    },
+    "servers": [
+      {
+        "url": "https://api.velocards.com/api/v1",
+        "description": "Production server"
+      },
+      {
+        "url": "http://localhost:3001/api/v1",
+        "description": "Development server"
+      }
+    ],
+    "securityDefinitions": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Authorization header using the Bearer scheme."
+      },
+      "ApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API Key for webhook endpoints"
+      }
+    }
+  },
+  "routes": {
+    "routesDir": "src/generated",
+    "basePath": "/api/v1",
+    "authenticationModule": "src/api/middlewares/auth.ts",
+    "middleware": "express"
+  }
+}

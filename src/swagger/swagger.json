@@ -1,0 +1,569 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"UserProfile": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"first_name": {
+						"type": "string"
+					},
+					"last_name": {
+						"type": "string"
+					},
+					"balance": {
+						"type": "number",
+						"format": "double"
+					},
+					"currency": {
+						"type": "string"
+					},
+					"tier_level": {
+						"type": "number",
+						"format": "double"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"email",
+					"first_name",
+					"last_name",
+					"balance",
+					"currency",
+					"tier_level",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_UserProfile_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"data": {
+						"$ref": "#/components/schemas/UserProfile"
+					},
+					"meta": {
+						"properties": {
+							"requestId": {
+								"type": "string"
+							},
+							"timestamp": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"timestamp"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"success",
+					"data"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Card": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"user_id": {
+						"type": "string"
+					},
+					"card_number_masked": {
+						"type": "string"
+					},
+					"card_type": {
+						"type": "string",
+						"enum": [
+							"MASTERCARD",
+							"VISA"
+						]
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"ACTIVE",
+							"FROZEN",
+							"DISABLED"
+						]
+					},
+					"balance": {
+						"type": "number",
+						"format": "double"
+					},
+					"spending_limit": {
+						"type": "number",
+						"format": "double"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"user_id",
+					"card_number_masked",
+					"card_type",
+					"status",
+					"balance",
+					"spending_limit",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_Card-Array_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"data": {
+						"items": {
+							"$ref": "#/components/schemas/Card"
+						},
+						"type": "array"
+					},
+					"meta": {
+						"properties": {
+							"requestId": {
+								"type": "string"
+							},
+							"timestamp": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"timestamp"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"success",
+					"data"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_Card_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"data": {
+						"$ref": "#/components/schemas/Card"
+					},
+					"meta": {
+						"properties": {
+							"requestId": {
+								"type": "string"
+							},
+							"timestamp": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"timestamp"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"success",
+					"data"
+				],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {
+			"Bearer": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT",
+				"description": "JWT Authorization header using the Bearer scheme."
+			},
+			"ApiKey": {
+				"type": "apiKey",
+				"in": "header",
+				"name": "X-API-Key",
+				"description": "API Key for webhook endpoints"
+			}
+		}
+	},
+	"info": {
+		"title": "digistreets-backend",
+		"version": "1.0.0",
+		"description": "DigiStreets VCC Platform - Backend API",
+		"contact": {}
+	},
+	"paths": {
+		"/users/profile": {
+			"get": {
+				"operationId": "GetProfile",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_UserProfile_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"error": {
+											"properties": {
+												"message": {
+													"type": "string"
+												},
+												"code": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"message",
+												"code"
+											],
+											"type": "object"
+										},
+										"success": {
+											"type": "boolean",
+											"enum": [
+												false
+											],
+											"nullable": false
+										}
+									},
+									"required": [
+										"error",
+										"success"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "User not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"error": {
+											"properties": {
+												"message": {
+													"type": "string"
+												},
+												"code": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"message",
+												"code"
+											],
+											"type": "object"
+										},
+										"success": {
+											"type": "boolean",
+											"enum": [
+												false
+											],
+											"nullable": false
+										}
+									},
+									"required": [
+										"error",
+										"success"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get authenticated user's profile",
+				"summary": "Get user profile",
+				"tags": [
+					"Users"
+				],
+				"security": [
+					{
+						"Bearer": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/cards": {
+			"get": {
+				"operationId": "GetUserCards",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_Card-Array_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"error": {
+											"properties": {
+												"message": {
+													"type": "string"
+												},
+												"code": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"message",
+												"code"
+											],
+											"type": "object"
+										},
+										"success": {
+											"type": "boolean",
+											"enum": [
+												false
+											],
+											"nullable": false
+										}
+									},
+									"required": [
+										"error",
+										"success"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all cards for authenticated user",
+				"summary": "List user cards",
+				"tags": [
+					"Cards"
+				],
+				"security": [
+					{
+						"Bearer": []
+					}
+				],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateCard",
+				"responses": {
+					"201": {
+						"description": "Card created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_Card_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"error": {
+											"properties": {
+												"message": {
+													"type": "string"
+												},
+												"code": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"message",
+												"code"
+											],
+											"type": "object"
+										},
+										"success": {
+											"type": "boolean",
+											"enum": [
+												false
+											],
+											"nullable": false
+										}
+									},
+									"required": [
+										"error",
+										"success"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"error": {
+											"properties": {
+												"message": {
+													"type": "string"
+												},
+												"code": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"message",
+												"code"
+											],
+											"type": "object"
+										},
+										"success": {
+											"type": "boolean",
+											"enum": [
+												false
+											],
+											"nullable": false
+										}
+									},
+									"required": [
+										"error",
+										"success"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"error": {
+											"properties": {
+												"message": {
+													"type": "string"
+												},
+												"code": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"message",
+												"code"
+											],
+											"type": "object"
+										},
+										"success": {
+											"type": "boolean",
+											"enum": [
+												false
+											],
+											"nullable": false
+										}
+									},
+									"required": [
+										"error",
+										"success"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new virtual card",
+				"summary": "Create virtual card",
+				"tags": [
+					"Cards"
+				],
+				"security": [
+					{
+						"Bearer": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "Card creation parameters",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"name": {
+										"type": "string"
+									},
+									"spending_limit": {
+										"type": "number",
+										"format": "double"
+									},
+									"card_type": {
+										"type": "string",
+										"enum": [
+											"MASTERCARD",
+											"VISA"
+										]
+									}
+								},
+								"required": [
+									"card_type"
+								],
+								"type": "object",
+								"description": "Card creation parameters"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "https://[object Object]/"
+		},
+		{
+			"url": "https://[object Object]/"
+		}
+	]
+}
