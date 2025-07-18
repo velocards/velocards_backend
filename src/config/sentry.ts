@@ -8,6 +8,8 @@ export function initializeSentry() {
     return;
   }
 
+  console.log('Initializing Sentry with DSN:', env.SENTRY_DSN.substring(0, 20) + '...');
+
   Sentry.init({
     dsn: env.SENTRY_DSN,
     environment: env.NODE_ENV,
@@ -80,6 +82,8 @@ export function initializeSentry() {
       return breadcrumb;
     },
   });
+  
+  console.log('✅ Sentry initialized successfully for', env.NODE_ENV, 'environment');
 }
 
 // Helper to capture user context
