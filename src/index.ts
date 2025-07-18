@@ -40,6 +40,7 @@ import dotenv from 'dotenv';
   import invoiceRoutes from './api/routes/invoiceRoutes';
   import kycRoutes from './api/routes/kycRoutes';
   import announcementRoutes from './api/routes/announcementRoutes';
+  import bullDashboard from './api/routes/bullDashboard';
 
   // Import job workers
   import { startJobWorkers, stopJobWorkers } from './jobs';
@@ -140,6 +141,9 @@ import dotenv from 'dotenv';
   
   // Webhook routes (no /api/v1 prefix, mounted directly, no CSRF)
   app.use('/webhooks', webhookRoutes);
+  
+  // Admin dashboard for monitoring queues (protected by auth)
+  app.use('/admin/queues', bullDashboard);
 
   // Special secure endpoint expected by frontend
   app.post('/api/v1/secure/card-details',

@@ -34,6 +34,8 @@
     "test:email": "ts-node scripts/test-email.ts"
   },
   "dependencies": {
+    "@bull-board/api": "^6.11.1",
+    "@bull-board/express": "^6.11.1",
     "@sendgrid/mail": "^8.1.5",
     "@sentry/node": "^9.40.0",
     "@sentry/profiling-node": "^9.40.0",
