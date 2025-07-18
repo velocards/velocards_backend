@@ -1,10 +1,20 @@
 import Redis from 'ioredis';
-import { redis as redisConfig } from './env';
+import { redis as redisConfig, env } from './env';
 import logger from '../utils/logger';
+
+// Determine which Redis URL to use
+const getRedisUrl = () => {
+  if (env.USE_UPSTASH_REDIS && env.REDIS_UPSTASH_URL) {
+    logger.info('Using Upstash Redis for production');
+    return env.REDIS_UPSTASH_URL;
+  }
+  return redisConfig.url;
+};
 
 // Function to create a new Redis connection
 export const createRedisConnection = () => {
-  return new Redis(redisConfig.url, {
+  const redisUrl = getRedisUrl();
+  return new Redis(redisUrl, {
     retryStrategy: (times) => {
       const delay = Math.min(times * 50, 2000);
       return delay;
@@ -27,7 +37,7 @@ export const createRedisConnection = () => {
   });
 };
 
-const redis = new Redis(redisConfig.url, {
+const redis = new Redis(getRedisUrl(), {
   retryStrategy: (times) => {
     const delay = Math.min(times * 50, 2000);
     return delay;

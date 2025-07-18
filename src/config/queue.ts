@@ -6,7 +6,10 @@ import logger from '../utils/logger';
 // Create a dedicated Redis connection for BullMQ
 // Using different connection than our session Redis to avoid conflicts
 const createRedisConnection = () => {
-  const redisUrl = env.REDIS_URL || 'redis://localhost:6379';
+  // Use Upstash in production if configured
+  const redisUrl = (env.USE_UPSTASH_REDIS && env.REDIS_UPSTASH_URL) 
+    ? env.REDIS_UPSTASH_URL 
+    : env.REDIS_URL;
   
   try {
     const redis = new IORedis(redisUrl, {

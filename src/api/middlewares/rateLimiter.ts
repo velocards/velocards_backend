@@ -3,29 +3,45 @@ import { Request } from 'express';
 import { env } from '../../config/env';
 import logger from '../../utils/logger';
 
-// Whitelisted IP for development/testing (bypasses all rate limits)
-const WHITELISTED_IP = '106.219.163.143'; // Your current IP
+// Get whitelisted IPs from environment variable
+const getWhitelistedIPs = (): string[] => {
+  if (!env.RATE_LIMIT_WHITELIST_IPS) {
+    return [];
+  }
+  return env.RATE_LIMIT_WHITELIST_IPS.split(',').map(ip => ip.trim()).filter(ip => ip.length > 0);
+};
 
 // Function to check if request should skip rate limiting
 function shouldSkipRateLimit(req: Request): boolean {
-  const clientIP = req.ip || req.connection.remoteAddress || '';
+  const clientIP = req.ip || req.socket.remoteAddress || '';
   const forwarded = req.headers['x-forwarded-for'] as string;
+  const whitelistedIPs = getWhitelistedIPs();
   
   // Skip in test environment
   if (env.NODE_ENV === 'test') {
     return true;
   }
   
-  // Check direct IP
-  if (clientIP === WHITELISTED_IP || clientIP === `::ffff:${WHITELISTED_IP}`) {
-    return true;
+  // No whitelisted IPs configured
+  if (whitelistedIPs.length === 0) {
+    return false;
   }
   
-  // Check forwarded IPs
-  if (forwarded) {
-    const ips = forwarded.split(',').map(ip => ip.trim());
-    if (ips.includes(WHITELISTED_IP)) {
+  // Check if client IP is whitelisted
+  for (const whitelistedIP of whitelistedIPs) {
+    // Check direct IP
+    if (clientIP === whitelistedIP || clientIP === `::ffff:${whitelistedIP}`) {
+      logger.info(`Rate limit bypassed for whitelisted IP: ${clientIP}`);
       return true;
+    }
+    
+    // Check forwarded IPs
+    if (forwarded) {
+      const ips = forwarded.split(',').map(ip => ip.trim());
+      if (ips.includes(whitelistedIP)) {
+        logger.info(`Rate limit bypassed for whitelisted forwarded IP: ${whitelistedIP}`);
+        return true;
+      }
     }
   }
   

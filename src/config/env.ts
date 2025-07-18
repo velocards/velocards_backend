@@ -17,6 +17,8 @@ export const env = cleanEnv(process.env, {
 
   // Redis Configuration
   REDIS_URL: str(),
+  REDIS_UPSTASH_URL: str({ default: '' }), // Upstash Redis URL for production
+  USE_UPSTASH_REDIS: bool({ default: false }), // Flag to switch between Railway/Upstash
 
   // JWT Configuration
   JWT_ACCESS_SECRET: str(),
@@ -83,6 +85,7 @@ export const env = cleanEnv(process.env, {
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: num({ default: 900000 }), // 15 minutes
   RATE_LIMIT_MAX_REQUESTS: num({ default: 100 }),
+  RATE_LIMIT_WHITELIST_IPS: str({ default: '' }), // Comma-separated list of IPs to bypass rate limiting
 
   // Logging and Monitoring
   LOG_LEVEL: str({ 

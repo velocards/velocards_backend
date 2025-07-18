@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { security } from '../config/env';
 import { ValidationError } from '../utils/errors';
 
@@ -41,7 +42,8 @@ export class PasswordService {
     let password = '';
     
     for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * charset.length);
+      // Use crypto.randomInt for cryptographically secure random numbers
+      const randomIndex = crypto.randomInt(0, charset.length);
       password += charset[randomIndex];
     }
     
