@@ -85,4 +85,27 @@ pids/
 .cache/
 .npm/
 .eslintcache
-.node_repl_historySECURITY-*.md
+.node_repl_history
+
+# Security audit files
+SECURITY-*.md
+
+# Test scripts and debugging
+src/scripts/check-*.ts
+src/scripts/test-*.ts
+src/scripts/debug-*.ts
+*.test.ts
+*.spec.ts
+
+# Development scripts
+scripts/local-*.ts
+scripts/dev-*.ts
+
+# Temporary analysis files
+analysis/
+*.analysis.md
+*.audit.md
+
+# Local configuration
+local-*.json
+*.local.json
