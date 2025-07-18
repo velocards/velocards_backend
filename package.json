@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "DigiStreets VCC Platform - Backend API",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/index.ts",
     "build": "tsc",
