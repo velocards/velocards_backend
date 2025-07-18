@@ -93,6 +93,7 @@ export const env = cleanEnv(process.env, {
     default: 'info' 
   }),
   SENTRY_DSN: str({ default: '' }),
+  SENTRY_RELEASE: str({ default: '' }),
 
   // CORS
   ALLOWED_ORIGINS: str({ default: 'http://localhost:3000' }),

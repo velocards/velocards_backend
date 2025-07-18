@@ -1,5 +1,10 @@
 import dotenv from 'dotenv';
   dotenv.config();
+  
+  // Initialize Sentry before other imports for better error tracking
+  import { initializeSentry } from './config/sentry';
+  initializeSentry();
+  
   import express from 'express';
   import cors from 'cors';
   import helmet from 'helmet';
@@ -10,6 +15,7 @@ import dotenv from 'dotenv';
   import { testDatabaseConnection } from './config/database';
   import { requestId } from './api/middlewares/requestId';
   import { errorHandler } from './api/middlewares/errorHandler';
+  import { sentryRequestHandler, sentryErrorHandler } from './api/middlewares/sentryMiddleware';
   import { globalLimiter } from './api/middlewares/rateLimiter';
   import { csrfProtection } from './api/middlewares/csrf';
   import { sanitizeInput } from './api/middlewares/sanitize';
@@ -42,7 +48,10 @@ import dotenv from 'dotenv';
 
   const app = express();
 
-  // Request ID middleware (should be first)
+  // Sentry request handler (must be first)
+  app.use(sentryRequestHandler());
+
+  // Request ID middleware
   app.use(requestId);
 
   // Global rate limiter (early in the middleware chain)
@@ -152,6 +161,9 @@ import dotenv from 'dotenv';
     });
   });
 
+  // Sentry error handler (must be before other error handlers)
+  app.use(sentryErrorHandler());
+  
   // Error handler (should be last) - Express error handlers need 4 parameters
   app.use(errorHandler as express.ErrorRequestHandler);
 
