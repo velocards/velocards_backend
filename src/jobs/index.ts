@@ -11,6 +11,8 @@ import { createSessionMonitoringWorker } from './processors/sessionMonitoringPro
 import { createTierUpgradeWorker, scheduleTierUpgrades } from './processors/tierUpgradeProcessor';
 import { createMonthlyFeeWorker } from './processors/monthlyFeeProcessor';
 import { createInvoiceWorker } from './processors/invoiceProcessor';
+import { createPasswordResetCleanupWorker } from './processors/passwordResetCleanupProcessor';
+import { createEmailVerificationCleanupWorker } from './processors/emailVerificationCleanupProcessor';
 import { initializeScheduledJobs, cleanupOldJobs } from './schedulers/jobScheduler';
 import { createQueueEvents, QUEUE_NAMES } from '../config/queue';
 import logger from '../utils/logger';
@@ -38,7 +40,9 @@ export async function startJobWorkers() {
       createSessionMonitoringWorker(),
       createTierUpgradeWorker(),
       createMonthlyFeeWorker(),
-      createInvoiceWorker()
+      createInvoiceWorker(),
+      createPasswordResetCleanupWorker(),
+      createEmailVerificationCleanupWorker()
     ];
 
     // Create queue event listeners for monitoring

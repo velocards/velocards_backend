@@ -3,11 +3,14 @@ import { CardController } from '../controllers/cardController';
 import { authenticate } from '../middlewares/auth';
 import { authorize } from '../middlewares/authorize';
 import { validate } from '../middlewares/validate';
+import { requireRequestSignature } from '../middlewares/requestSigning';
 import { 
   createCardSchema, 
   updateCardLimitsSchema,
   cardIdParamSchema,
-  cardTransactionsQuerySchema
+  cardTransactionsQuerySchema,
+  createCardSessionSchema,
+  getSecureCardDetailsSchema
 } from '../validators/cardValidators';
 import { PERMISSIONS } from '../../config/roles';
 
@@ -46,34 +49,53 @@ router.get(
   CardController.getCard
 );
 
-// Get full card details (PAN, CVV) - SECURITY SENSITIVE
+// Create secure session for viewing sensitive card details
+router.post(
+  '/:cardId/create-session',
+  authorize(PERMISSIONS.CARDS_READ),
+  validate(createCardSessionSchema),
+  CardController.createCardSession
+);
+
+// Get secure card details using session token
+router.post(
+  '/secure/details',
+  authorize(PERMISSIONS.CARDS_READ),
+  validate(getSecureCardDetailsSchema),
+  CardController.getSecureCardDetails
+);
+
+// Get full card details (PAN, CVV) - DEPRECATED
 router.get(
   '/:cardId/full-details',
-  authorize(PERMISSIONS.CARDS_READ), // TODO: Consider adding a more restrictive permission
+  authorize(PERMISSIONS.CARDS_READ),
   validate(cardIdParamSchema),
   CardController.getFullCardDetails
 );
 
-// Freeze card
+// Freeze card (requires request signature)
 router.put(
   '/:cardId/freeze',
   authorize(PERMISSIONS.CARDS_FREEZE),
+  requireRequestSignature,
   validate(cardIdParamSchema),
   CardController.freezeCard
 );
 
-// Unfreeze card
+// Unfreeze card (requires request signature)
 router.put(
   '/:cardId/unfreeze',
   authorize(PERMISSIONS.CARDS_UNFREEZE),
+  requireRequestSignature,
   validate(cardIdParamSchema),
   CardController.unfreezeCard
 );
 
-// Delete card
+// Delete card (requires request signature)
 router.delete(
   '/:cardId',
   authorize(PERMISSIONS.CARDS_DELETE),
+  requireRequestSignature,
   validate(cardIdParamSchema),
   CardController.deleteCard
 );

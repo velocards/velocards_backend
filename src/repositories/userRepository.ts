@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
     email_verified: boolean;
     kyc_status: 'pending' | 'approved' | 'rejected' | 'expired';
     kyc_completed_at?: Date | null;
+    kyc_applicant_id?: string | null;
     risk_score: number;
     account_status: 'active' | 'suspended' | 'closed';
     virtual_balance: number;
@@ -440,4 +441,94 @@ import { v4 as uuidv4 } from 'uuid';
         logger.error('Unexpected error in recordAuthEvent:', error);
       }
     }
+
+  static async updateKYCStatus(
+    userId: string,
+    status: 'pending' | 'approved' | 'rejected' | 'expired',
+    additionalData?: {
+      kyc_applicant_id?: string;
+      kyc_review_answer?: string;
+      kyc_review_status?: string;
+      kyc_completed_at?: string | null;
+      kyc_reset_at?: string;
+    }
+  ): Promise<void> {
+    try {
+      // Prepare update data
+      const updateData: any = {
+        kyc_status: status,
+        updated_at: new Date().toISOString()
+      };
+
+      // Add kyc_completed_at if status is approved
+      if (status === 'approved' && additionalData?.kyc_completed_at) {
+        updateData.kyc_completed_at = additionalData.kyc_completed_at;
+      }
+
+      // Add kyc_applicant_id if provided
+      if (additionalData?.kyc_applicant_id) {
+        updateData.kyc_applicant_id = additionalData.kyc_applicant_id;
+      }
+
+      // Update user profile
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .update(updateData)
+        .eq('id', userId);
+
+      if (profileError) {
+        logger.error('Error updating KYC status:', profileError);
+        throw new InternalError('Failed to update KYC status');
+      }
+
+      // Update metadata if additional data provided (excluding kyc_applicant_id which is now a column)
+      const metadataFields = ['kyc_review_answer', 'kyc_review_status', 'kyc_reset_at'];
+      const metadataToUpdate: any = {};
+      
+      if (additionalData) {
+        for (const field of metadataFields) {
+          if (additionalData[field as keyof typeof additionalData] !== undefined) {
+            metadataToUpdate[field] = additionalData[field as keyof typeof additionalData];
+          }
+        }
+      }
+
+      if (Object.keys(metadataToUpdate).length > 0) {
+        // First get current metadata
+        const { data: user, error: fetchError } = await supabase
+          .from('user_profiles')
+          .select('metadata')
+          .eq('id', userId)
+          .single();
+
+        if (fetchError) {
+          logger.error('Error fetching user metadata:', fetchError);
+          throw new InternalError('Failed to fetch user metadata');
+        }
+
+        // Merge with new data
+        const updatedMetadata = {
+          ...user.metadata,
+          ...metadataToUpdate
+        };
+
+        // Update metadata
+        const { error: metadataError } = await supabase
+          .from('user_profiles')
+          .update({ metadata: updatedMetadata })
+          .eq('id', userId);
+
+        if (metadataError) {
+          logger.error('Error updating user metadata:', metadataError);
+          throw new InternalError('Failed to update user metadata');
+        }
+      }
+
+      logger.info('KYC status updated successfully:', { userId, status, applicantId: additionalData?.kyc_applicant_id });
+    } catch (error) {
+      if (error instanceof InternalError) throw error;
+      logger.error('Unexpected error in updateKYCStatus:', error);
+      throw new InternalError('Failed to update KYC status');
+    }
+  }
   }

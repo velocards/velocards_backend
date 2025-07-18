@@ -1,0 +1,87 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.*
+.env.local
+.env.development
+.env.test
+.env.production
+.env.backup*
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+log/
+*.log.*
+combined.log
+error.log
+pm2-*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+
+# Backup files
+*.backup
+*.backup.*
+*.bak
+backup-*.tar.gz
+*.tar.gz
+src.backup.*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+.tmp/
+tmp/
+temp/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Certificates
+*.pem
+*.key
+*.crt
+
+# Database
+*.sqlite
+*.sqlite3
+
+# Redis
+dump.rdb
+
+# PM2
+.pm2/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Archives
+*.zip
+*.rar
+*.7z
+
+# Misc
+.cache/
+.npm/
+.eslintcache
+.node_repl_history

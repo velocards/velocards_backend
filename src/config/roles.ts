@@ -50,7 +50,11 @@ export const PERMISSIONS = {
   SYSTEM_ADMIN: 'system:admin',
   MASTER_ACCOUNT: 'master:account',
   REPORTS_VIEW: 'reports:view',
-  REPORTS_GENERATE: 'reports:generate'
+  REPORTS_GENERATE: 'reports:generate',
+  
+  // Announcement permissions
+  ANNOUNCEMENTS_READ: 'announcements:read',
+  ANNOUNCEMENTS_MANAGE: 'announcements:manage'
 } as const;
 
 // Type for permission values
@@ -104,7 +108,10 @@ export const ROLE_PERMISSIONS: Record<UserRole, {
       // Invoice access
       PERMISSIONS.INVOICES_READ,
       PERMISSIONS.INVOICES_UPDATE,
-      PERMISSIONS.INVOICES_SEND
+      PERMISSIONS.INVOICES_SEND,
+      
+      // Announcement access
+      PERMISSIONS.ANNOUNCEMENTS_READ
     ]
   },
   
@@ -145,7 +152,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, {
       PERMISSIONS.SYSTEM_ADMIN,
       PERMISSIONS.MASTER_ACCOUNT,
       PERMISSIONS.REPORTS_VIEW,
-      PERMISSIONS.REPORTS_GENERATE
+      PERMISSIONS.REPORTS_GENERATE,
+      PERMISSIONS.ANNOUNCEMENTS_READ,
+      PERMISSIONS.ANNOUNCEMENTS_MANAGE
     ]
   },
   
@@ -163,7 +172,10 @@ export const ROLE_PERMISSIONS: Record<UserRole, {
       // Support-specific permissions
       PERMISSIONS.USERS_LIST,
       PERMISSIONS.TRANSACTIONS_DISPUTE,
-      PERMISSIONS.REPORTS_VIEW
+      PERMISSIONS.REPORTS_VIEW,
+      
+      // Announcement access
+      PERMISSIONS.ANNOUNCEMENTS_READ
     ]
   }
 };

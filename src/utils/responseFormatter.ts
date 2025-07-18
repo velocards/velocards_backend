@@ -46,6 +46,17 @@ export function sendSuccess<T>(
   return res.status(statusCode).json(response);
 }
 
+export function formatResponse<T>(data: T, meta?: Partial<SuccessResponse['meta']>): SuccessResponse<T> {
+  return {
+    success: true,
+    data,
+    meta: {
+      timestamp: new Date().toISOString(),
+      ...meta
+    }
+  };
+}
+
 export function sendError(
   res: Response,
   code: string,
@@ -87,4 +98,37 @@ export function sendPaginatedSuccess<T>(
       totalPages
     }
   });
+}
+
+// Additional helper functions for better compatibility
+export function formatSuccessResponse<T>(
+  data: T,
+  meta?: Partial<SuccessResponse['meta']>
+): SuccessResponse<T> {
+  return {
+    success: true,
+    data,
+    meta: {
+      timestamp: new Date().toISOString(),
+      ...meta
+    }
+  };
+}
+
+export function formatErrorResponse(
+  code: string,
+  message: string,
+  details?: any
+): ErrorResponse {
+  return {
+    success: false,
+    error: {
+      code,
+      message,
+      details
+    },
+    meta: {
+      timestamp: new Date().toISOString()
+    }
+  };
 }

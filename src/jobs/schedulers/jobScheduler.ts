@@ -97,6 +97,30 @@ export async function initializeScheduledJobs() {
       '0 2 1 * *' // At 02:00 on day 1 of every month
     );
 
+    // Invoice event processing - every minute
+    await addRecurringJob(
+      queues.invoiceProcessing,
+      'scheduled-invoice-processing',
+      { type: 'process_events', batchSize: 100 },
+      '* * * * *' // Every minute
+    );
+
+    // Password reset token cleanup - every 4 hours
+    await addRecurringJob(
+      queues.passwordResetCleanup,
+      'scheduled-password-reset-cleanup',
+      { cleanupExpiredTokens: true },
+      '0 */4 * * *' // Every 4 hours
+    );
+
+    // Email verification token cleanup - every 6 hours
+    await addRecurringJob(
+      queues.emailVerificationCleanup,
+      'scheduled-email-verification-cleanup',
+      { timestamp: new Date().toISOString() },
+      '0 */6 * * *' // Every 6 hours
+    );
+
     logger.info('All scheduled jobs initialized successfully');
   } catch (error) {
     logger.error('Failed to initialize scheduled jobs:', error);

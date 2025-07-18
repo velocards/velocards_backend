@@ -1,7 +1,8 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middlewares/auth';
 import { CardService } from '../../services/cardService';
-import { sendSuccess } from '../../utils/responseFormatter';
+import { CardSessionService } from '../../services/cardSessionService';
+import { sendSuccess, sendError } from '../../utils/responseFormatter';
 import logger from '../../utils/logger';
 
 export class CardController {
@@ -53,7 +54,7 @@ export class CardController {
   static async getCard(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.id;
-      const { cardId } = req.params;
+      const cardId = req.params['cardId'];
       
       const card = await CardService.getCard(userId, cardId!);
       
@@ -64,15 +65,92 @@ export class CardController {
   }
 
   /**
-   * Get full card details including PAN and CVV
-   * ⚠️ SECURITY SENSITIVE: Returns unmasked card data
+   * Create a secure session for viewing card details
    */
-  static async getFullCardDetails(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  static async createCardSession(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.id;
-      const { cardId } = req.params;
+      const cardId = req.params['cardId'];
+      const { purpose } = req.body;
       
-      const cardDetails = await CardService.getFullCardDetails(userId, cardId!);
+      if (!['view_pan', 'view_cvv', 'view_full'].includes(purpose)) {
+        sendError(res, 'INVALID_PURPOSE', 'Invalid session purpose', 400);
+        return;
+      }
+      
+      const ip = req.ip || req.socket.remoteAddress || '';
+      const userAgent = req.get('user-agent');
+      
+      const session = await CardSessionService.createSession(
+        userId,
+        cardId!,
+        purpose,
+        ip,
+        userAgent
+      );
+      
+      logger.info('Card session created', {
+        userId,
+        cardId,
+        purpose,
+        sessionId: session.sessionId
+      });
+      
+      sendSuccess(res, {
+        sessionId: session.sessionId,
+        token: session.token,
+        expiresIn: 300 // 5 minutes
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  
+  /**
+   * Get secure card details using session
+   */
+  static async getSecureCardDetails(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.id;
+      const { sessionId, token } = req.body;
+      
+      if (!sessionId || !token) {
+        sendError(res, 'MISSING_SESSION', 'Session ID and token are required', 400);
+        return;
+      }
+      
+      const ip = req.ip || req.socket.remoteAddress || '';
+      
+      // Validate session
+      const session = await CardSessionService.validateSession(sessionId, token, userId, ip);
+      
+      if (!session) {
+        sendError(res, 'INVALID_SESSION', 'Invalid or expired session', 403);
+        return;
+      }
+      
+      // Get card details based on session purpose
+      const cardDetails = await CardService.getFullCardDetails(userId, session.cardId);
+      
+      let responseData: any = {};
+      
+      switch (session.purpose) {
+        case 'view_pan':
+          responseData = { pan: cardDetails.pan };
+          break;
+        case 'view_cvv':
+          responseData = { cvv: cardDetails.cvv };
+          break;
+        case 'view_full':
+          responseData = {
+            pan: cardDetails.pan,
+            cvv: cardDetails.cvv,
+            expiryMonth: cardDetails.expiryMonth,
+            expiryYear: cardDetails.expiryYear,
+            holderName: cardDetails.holderName
+          };
+          break;
+      }
       
       // Add security headers
       res.set({
@@ -81,7 +159,53 @@ export class CardController {
         'Expires': '0'
       });
       
-      sendSuccess(res, { cardDetails });
+      sendSuccess(res, responseData);
+    } catch (error) {
+      next(error);
+    }
+  }
+  
+  /**
+   * Get full card details including PAN and CVV
+   * @deprecated Use createCardSession and getSecureCardDetails instead
+   */
+  static async getFullCardDetails(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // Log deprecation warning
+      logger.warn('Deprecated endpoint accessed: getFullCardDetails', {
+        userId: req.user!.id,
+        cardId: req.params['cardId'],
+        ip: req.ip
+      });
+      
+      const userId = req.user!.id;
+      const cardId = req.params['cardId'];
+      
+      // Get card but only return masked data
+      const card = await CardService.getCard(userId, cardId!);
+      
+      // Add deprecation notice
+      res.set({
+        'X-Deprecated': 'true',
+        'X-Deprecation-Message': 'This endpoint is deprecated. Use /api/v1/cards/:cardId/session instead.',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
+      sendSuccess(res, {
+        message: 'This endpoint is deprecated. Only masked data is returned.',
+        cardDetails: {
+          id: card.id,
+          cardToken: card.cardToken,
+          maskedPan: card.maskedPan,
+          lastFourDigits: card.maskedPan.slice(-4),
+          status: card.status,
+          // Do not include sensitive data
+          pan: '****', 
+          cvv: '***'
+        }
+      });
     } catch (error) {
       next(error);
     }
@@ -112,7 +236,7 @@ export class CardController {
   static async freezeCard(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.id;
-      const { cardId } = req.params;
+      const cardId = req.params['cardId'];
       
       logger.info('Freezing card', { userId, cardId });
       
@@ -133,7 +257,7 @@ export class CardController {
   static async unfreezeCard(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.id;
-      const { cardId } = req.params;
+      const cardId = req.params['cardId'];
       
       logger.info('Unfreezing card', { userId, cardId });
       
@@ -154,7 +278,7 @@ export class CardController {
   static async deleteCard(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.id;
-      const { cardId } = req.params;
+      const cardId = req.params['cardId'];
       
       logger.info('Deleting card', { userId, cardId });
       
@@ -174,7 +298,7 @@ export class CardController {
   static async updateCardLimits(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.id;
-      const { cardId } = req.params;
+      const cardId = req.params['cardId'];
       const { spendingLimit } = req.body;
       
       logger.info('Updating card limits', { 
@@ -200,7 +324,7 @@ export class CardController {
   static async getCardTransactions(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.id;
-      const { cardId } = req.params;
+      const cardId = req.params['cardId'];
       const { page = 1, limit = 20 } = req.query as any;
       
       const result = await CardService.getCardTransactions(

@@ -429,9 +429,6 @@ export class CardService {
       const cardNumericId = parseInt(card.admediacards_card_id);
       const fullCardDetails = await admediacardsClient.showPAN(cardNumericId);
       
-      // Debug log to see what we got from the API
-      console.log('DEBUG: fullCardDetails from API:', fullCardDetails);
-      
       // Log access for security audit (without sensitive data)
       logger.info('Full card details accessed', {
         userId,
