@@ -23,7 +23,7 @@ export const env = cleanEnv(process.env, {
   // JWT Configuration
   JWT_ACCESS_SECRET: str(),
   JWT_REFRESH_SECRET: str(),
-  JWT_ACCESS_EXPIRY: str({ default: '15m' }),
+  JWT_ACCESS_EXPIRY: str({ default: '24h' }),
   JWT_REFRESH_EXPIRY: str({ default: '7d' }),
 
   // External API Keys (Optional for development)

@@ -53,7 +53,7 @@ function shouldSkipRateLimit(req: Request): boolean {
 // Default rate limiter for general API endpoints
 export const defaultLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 300, // Limit each IP to 300 requests per 15 minutes (20 req/min)
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   handler: (_req, res) => {
@@ -71,7 +71,7 @@ export const defaultLimiter = rateLimit({
 // Strict rate limiter for authentication endpoints
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
+  max: 10, // Limit each IP to 10 requests per 15 minutes
   skipSuccessfulRequests: false, // Count successful requests too
   standardHeaders: true,
   legacyHeaders: false,
@@ -131,7 +131,7 @@ export const cardCreationLimiter = rateLimit({
 // Transaction rate limiter - more lenient for viewing
 export const transactionReadLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 100, // 100 requests per minute for reading transactions
+  max: 60, // 60 requests per minute for reading transactions (1 per second)
   keyGenerator: (req: Request) => {
     return (req as any).user?.sub || req.ip || 'unknown';
   },
@@ -149,36 +149,11 @@ export const transactionReadLimiter = rateLimit({
   skip: (req) => shouldSkipRateLimit(req)
 });
 
-// Withdrawal/sensitive financial operations limiter
-export const withdrawalLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // 3 withdrawal attempts per hour
-  keyGenerator: (req: Request) => {
-    return (req as any).user?.sub || req.ip || 'unknown';
-  },
-  skipSuccessfulRequests: false,
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res) => {
-    logger.warn('Withdrawal rate limit exceeded', {
-      userId: (req as any).user?.sub,
-      ip: req.ip
-    });
-    res.status(429).json({
-      success: false,
-      error: {
-        code: 'WITHDRAWAL_LIMIT_EXCEEDED',
-        message: 'Too many withdrawal attempts, please try again later'
-      }
-    });
-  },
-  skip: (req) => shouldSkipRateLimit(req)
-});
 
 // API-wide rate limiter to prevent DDoS
 export const globalLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 1000, // 1000 requests per minute per IP
+  max: 500, // 500 requests per minute per IP
   standardHeaders: true,
   legacyHeaders: false,
   handler: (_req, res) => {
@@ -240,7 +215,6 @@ export const rateLimiter = {
   strict: strictLimiter,
   cardCreation: cardCreationLimiter,
   transactionRead: transactionReadLimiter,
-  withdrawal: withdrawalLimiter,
   global: globalLimiter,
   kyc: kycLimiter,
   webhook: webhookLimiter
