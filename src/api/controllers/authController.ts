@@ -33,7 +33,7 @@ export class AuthController {
         await CaptchaService.verify(req.body.captchaToken, clientIp);
       }
 
-      const result = await UserService.register(req.body);
+      const result = await UserService.register(req.body, req);
       
       // Send verification email
       try {
@@ -95,7 +95,7 @@ export class AuthController {
         await CaptchaService.verify(req.body.captchaToken, clientIp);
       }
 
-      const result = await UserService.login(req.body);
+      const result = await UserService.login(req.body, req);
       
       // Set tokens as httpOnly cookies
       res.cookie('accessToken', result.tokens.accessToken, {

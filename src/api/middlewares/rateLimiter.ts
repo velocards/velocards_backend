@@ -2,6 +2,7 @@ import rateLimit from 'express-rate-limit';
 import { Request } from 'express';
 import { env } from '../../config/env';
 import logger from '../../utils/logger';
+import { SecurityLoggingService } from '../../services/securityLoggingService';
 
 // Get whitelisted IPs from environment variable
 const getWhitelistedIPs = (): string[] => {
@@ -56,7 +57,8 @@ export const defaultLimiter = rateLimit({
   max: 300, // Limit each IP to 300 requests per 15 minutes (20 req/min)
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  handler: (_req, res) => {
+  handler: (req, res) => {
+    SecurityLoggingService.logRateLimitViolation(req, 'default');
     res.status(429).json({
       success: false,
       error: {
@@ -75,7 +77,8 @@ export const authLimiter = rateLimit({
   skipSuccessfulRequests: false, // Count successful requests too
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (_req, res) => {
+  handler: (req, res) => {
+    SecurityLoggingService.logRateLimitViolation(req, 'auth');
     res.status(429).json({
       success: false,
       error: {
@@ -156,7 +159,8 @@ export const globalLimiter = rateLimit({
   max: 500, // 500 requests per minute per IP
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (_req, res) => {
+  handler: (req, res) => {
+    SecurityLoggingService.logRateLimitViolation(req, 'global');
     res.status(429).json({
       success: false,
       error: {

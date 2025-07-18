@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middlewares/auth';
 import { CardService } from '../../services/cardService';
 import { CardSessionService } from '../../services/cardSessionService';
+import { SecurityLoggingService } from '../../services/securityLoggingService';
 import { sendSuccess, sendError } from '../../utils/responseFormatter';
 import logger from '../../utils/logger';
 
@@ -37,6 +38,15 @@ export class CardController {
       });
       
       const card = await CardService.createCard(userId, cardData);
+      
+      // Log card creation for security monitoring
+      SecurityLoggingService.logCardOperation(
+        userId,
+        req,
+        'created',
+        card.id,
+        true
+      );
       
       res.status(201);
       sendSuccess(res, {
@@ -158,6 +168,15 @@ export class CardController {
         'Pragma': 'no-cache',
         'Expires': '0'
       });
+      
+      // Log card detail viewing for security
+      SecurityLoggingService.logCardOperation(
+        userId,
+        req,
+        'viewed',
+        session.cardId,
+        true
+      );
       
       sendSuccess(res, responseData);
     } catch (error) {

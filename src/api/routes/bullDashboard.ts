@@ -5,6 +5,7 @@ import { ExpressAdapter } from '@bull-board/express';
 import { queues } from '../../config/queue';
 import { authenticate } from '../middlewares/auth';
 import { env } from '../../config/env';
+import { SecurityLoggingService } from '../../services/securityLoggingService';
 
 const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath('/admin/queues');
@@ -37,6 +38,15 @@ router.use(
       });
       return;
     }
+    
+    // Log admin dashboard access
+    SecurityLoggingService.logAdminAction(
+      req,
+      'bull_dashboard_access',
+      '/admin/queues',
+      { path: req.path, method: req.method }
+    );
+    
     next();
   },
   serverAdapter.getRouter()

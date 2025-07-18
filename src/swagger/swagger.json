@@ -558,10 +558,10 @@
 	},
 	"servers": [
 		{
-			"url": "https://https://api.velocards.com/api/v1/"
+			"url": "https://[object Object]/"
 		},
 		{
-			"url": "https://http://localhost:3001/api/v1/"
+			"url": "https://[object Object]/"
 		}
 	]
 }

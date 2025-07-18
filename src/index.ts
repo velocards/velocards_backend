@@ -89,12 +89,20 @@ import dotenv from 'dotenv';
   }));
   
   // Additional security headers
-  app.use((_req, res, next) => {
+  app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+    
+    // Prevent caching of sensitive API data
+    if (req.path.includes('/api/')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
+    }
     
     // Remove fingerprinting headers
     res.removeHeader('X-Powered-By');

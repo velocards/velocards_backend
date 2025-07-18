@@ -4,6 +4,7 @@ import { CryptoRepository } from '../repositories/cryptoRepository';
 import { PasswordService } from './passwordService';
 import { TokenService } from './tokenService';
 import tierService from './tierService';
+import { SecurityLoggingService } from './securityLoggingService';
 import { AuthenticationError, ConflictError, NotFoundError, ValidationError, AppError } from '../utils/errors';
 import { RegisterInput, LoginInput } from '../api/validators/authValidators';
 import { UserRole, getDefaultRole } from '../config/roles';
@@ -94,7 +95,7 @@ export interface UserPublicData {
 }
 
 export class UserService {
-    static async register(data: RegisterInput) {
+    static async register(data: RegisterInput, req?: any) {
       // Check if email is available
       const emailAvailable = await UserRepository.isEmailAvailable(data.email);
       if (!emailAvailable) {
@@ -124,12 +125,21 @@ export class UserService {
       const tokens = await TokenService.generateTokenPair(user.id, user.email, user.role as UserRole);
 
       // Record registration event
-      await UserRepository.recordAuthEvent(
-        user.id,
-        'user_registered',
-        undefined, // IP address would come from request
-        undefined  // User agent would come from request
-      );
+      if (req) {
+        await UserRepository.recordAuthEvent(
+          user.id,
+          'user_registered',
+          SecurityLoggingService.getClientIp(req),
+          SecurityLoggingService.getUserAgent(req)
+        );
+      } else {
+        await UserRepository.recordAuthEvent(
+          user.id,
+          'user_registered',
+          undefined,
+          undefined
+        );
+      }
 
       logger.info(`New user registered: ${user.email}`);
 
@@ -139,10 +149,13 @@ export class UserService {
       };
     }
 
-    static async login(data: LoginInput) {
+    static async login(data: LoginInput, req?: any) {
       // Find user by email
       const user = await UserRepository.findByEmail(data.email);
       if (!user) {
+        if (req) {
+          await SecurityLoggingService.logFailedLogin(data.email, req, 'User not found');
+        }
         throw new AuthenticationError('Invalid email or password');
       }
 
@@ -159,13 +172,17 @@ export class UserService {
       
       const passwordValid = await PasswordService.verify(data.password, passwordHash);
       if (!passwordValid) {
-        // Record failed login attempt
-        await UserRepository.recordAuthEvent(
-          user.id,
-          'login_failed',
-          undefined, // IP address would come from request
-          undefined  // User agent would come from request
-        );
+        if (req) {
+          await SecurityLoggingService.logFailedLogin(data.email, req, 'Invalid password');
+        } else {
+          // Fallback to old method if no request object
+          await UserRepository.recordAuthEvent(
+            user.id,
+            'login_failed',
+            undefined,
+            undefined
+          );
+        }
         throw new AuthenticationError('Invalid email or password');
       }
 
@@ -182,12 +199,17 @@ export class UserService {
       }
 
       // Record successful login
-      await UserRepository.recordAuthEvent(
-        user.id,
-        'login_success',
-        undefined, // IP address would come from request
-        undefined  // User agent would come from request
-      );
+      if (req) {
+        await SecurityLoggingService.logSuccessfulLogin(user.id, user.email, req);
+      } else {
+        // Fallback to old method if no request object
+        await UserRepository.recordAuthEvent(
+          user.id,
+          'login_success',
+          undefined,
+          undefined
+        );
+      }
 
       // Generate tokens with role
       const tokens = await TokenService.generateTokenPair(user.id, user.email, user.role as UserRole);
