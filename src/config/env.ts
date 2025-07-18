@@ -26,65 +26,63 @@ export const env = cleanEnv(process.env, {
   JWT_ACCESS_EXPIRY: str({ default: '24h' }),
   JWT_REFRESH_EXPIRY: str({ default: '7d' }),
 
-  // External API Keys (Optional for development)
-  ADMEDIACARDS_API_KEY: str({ default: 'mock_api_key' }),
-  ADMEDIACARDS_API_SECRET: str({ default: 'mock_api_secret' }),
-  ADMEDIACARDS_BASE_URL: str({ default: 'https://api.admediacards.com/v1' }),
-  ADMEDIACARDS_WEBHOOK_SECRET: str({ default: 'mock_webhook_secret' }),
-  ADMEDIACARDS_ACCOUNT_ID: str({ default: 'mock_account_id' }),
-  ADMEDIACARDS_TEST_MODE: bool({ default: true }),
-  ADMEDIACARDS_MAX_TEST_CARDS: num({ default: 1 }),
+  // External API Keys
+  ADMEDIACARDS_API_KEY: str(),
+  ADMEDIACARDS_API_SECRET: str({ default: '' }), // Optional - not in .env
+  ADMEDIACARDS_BASE_URL: str(),
+  ADMEDIACARDS_WEBHOOK_SECRET: str({ default: '' }), // Optional - not in .env
+  ADMEDIACARDS_ACCOUNT_ID: str(),
+  ADMEDIACARDS_TEST_MODE: bool(),
+  ADMEDIACARDS_MAX_TEST_CARDS: num(),
 
   XMONEY_API_KEY: str(),
   XMONEY_WEBHOOK_SECRET: str(),
-  XMONEY_USE_LIVE: bool({ default: false }),
+  XMONEY_USE_LIVE: bool(),
   XMONEY_LIVE_API_URL: str({ default: 'https://merchants.api.crypto.xmoney.com/api' }),
   XMONEY_SANDBOX_API_URL: str({ default: 'https://merchants.api.sandbox.crypto.xmoney.com/api' }),
-  XMONEY_API_TIMEOUT: num({ default: 30000 }),
-  XMONEY_RETURN_URL: str({ default: 'http://localhost:3000/crypto/success' }),
-  XMONEY_CANCEL_URL: str({ default: 'http://localhost:3000/crypto/cancel' }),
-  XMONEY_CALLBACK_URL: str({ default: 'https://your-ngrok-url.ngrok.io/api/v1/webhooks/xmoney' }),
+  XMONEY_API_TIMEOUT: num(),
+  XMONEY_RETURN_URL: str(),
+  XMONEY_CANCEL_URL: str(),
+  XMONEY_CALLBACK_URL: str(),
   
   // Crypto business configuration
-  DEFAULT_COUNTRY_CODE: str({ default: 'US' }),
-  MIN_DEPOSIT_AMOUNT: num({ default: 10 }),
-  MAX_DEPOSIT_AMOUNT: num({ default: 10000 }),
-  WITHDRAWAL_FEE_PERCENTAGE: num({ default: 0.02 }),
-  EXCHANGE_RATE_CACHE_TTL_MS: num({ default: 300000 }), // 5 minutes
+  DEFAULT_COUNTRY_CODE: str(),
+  MIN_DEPOSIT_AMOUNT: num(),
+  MAX_DEPOSIT_AMOUNT: num(),
+  WITHDRAWAL_FEE_PERCENTAGE: num(),
+  EXCHANGE_RATE_CACHE_TTL_MS: num(),
 
-  // KYC Provider (Optional for development)
-  KYC_PROVIDER: str({ choices: ['sumsub', 'jumio'], default: 'sumsub' }),
-  KYC_API_URL: url({ default: 'https://api.sumsub.com' }),
-  KYC_API_KEY: str({ default: 'mock_kyc_key' }),
-  KYC_SECRET_KEY: str({ default: 'mock_kyc_secret' }),
+  // KYC Provider
+  KYC_PROVIDER: str({ choices: ['sumsub', 'jumio'] }),
+  KYC_API_URL: url({ default: 'https://api.sumsub.com' }), // Standard Sumsub URL
+  KYC_API_KEY: str(),
+  KYC_SECRET_KEY: str(),
 
-  // Email Service (Optional for development)
-  SENDGRID_API_KEY: str({ default: 'mock_sendgrid_key' }),
-  RESEND_API_KEY: str({ default: '' }),
-  BREVO_API_KEY: str({ default: '' }),
-  FROM_EMAIL: emailValidator({ default: 'noreply@velocards.com' }),
-  FROM_NAME: str({ default: 'VeloCards' }),
+  // Email Service
+  SENDGRID_API_KEY: str(),
+  RESEND_API_KEY: str(),
+  BREVO_API_KEY: str({ default: '' }), // Optional - not in .env
+  FROM_EMAIL: emailValidator(),
+  FROM_NAME: str(),
   
   // Invoice Email Configuration
-  INVOICE_FROM_EMAIL: emailValidator({ default: 'invoices@velocards.com' }),
-  INVOICE_FROM_NAME: str({ default: 'VeloCards Finance' }),
-  FRONTEND_URL: url({ default: "http://localhost:3000" }),
+  INVOICE_FROM_EMAIL: emailValidator(),
+  INVOICE_FROM_NAME: str(),
+  FRONTEND_URL: url(),
 
-  // SMS Service (Optional for development)
-  TWILIO_ACCOUNT_SID: str({ default: 'mock_twilio_sid' }),
-  TWILIO_AUTH_TOKEN: str({ default: 'mock_twilio_token' }),
-  TWILIO_PHONE_NUMBER: str({ default: '+1234567890' }),
+  // SMS Service
+  TWILIO_ACCOUNT_SID: str(),
+  TWILIO_AUTH_TOKEN: str(),
+  TWILIO_PHONE_NUMBER: str(),
 
   // Security
   ENCRYPTION_KEY: str(),
   BCRYPT_ROUNDS: num({ default: 12 }),
   
   // Cloudflare Turnstile
-  TURNSTILE_SECRET_KEY: str({ default: '' }),
+  TURNSTILE_SECRET_KEY: str(),
 
   // Rate Limiting
-  RATE_LIMIT_WINDOW_MS: num({ default: 900000 }), // 15 minutes
-  RATE_LIMIT_MAX_REQUESTS: num({ default: 100 }),
   RATE_LIMIT_WHITELIST_IPS: str({ default: '' }), // Comma-separated list of IPs to bypass rate limiting
   
   // Admin Configuration
@@ -95,25 +93,25 @@ export const env = cleanEnv(process.env, {
     choices: ['error', 'warn', 'info', 'debug'], 
     default: 'info' 
   }),
-  SENTRY_DSN: str({ default: '' }),
+  SENTRY_DSN: str(),
   SENTRY_RELEASE: str({ default: '' }),
 
   // CORS
-  ALLOWED_ORIGINS: str({ default: 'http://localhost:3000' }),
+  ALLOWED_ORIGINS: str(),
 
   // Google OAuth Configuration
-  GOOGLE_CLIENT_ID: str({ default: '' }),
-  GOOGLE_CLIENT_SECRET: str({ default: '' }),
-  GOOGLE_REDIRECT_URI: url({ default: 'https://api.velocards.com/api/v1/auth/google/callback' }),
+  GOOGLE_CLIENT_ID: str(),
+  GOOGLE_CLIENT_SECRET: str(),
+  GOOGLE_REDIRECT_URI: url(),
 
   // Feature Flags
-  ENABLE_DEBUG_LOGS: bool({ default: false }),
-  MOCK_EXTERNAL_APIS: bool({ default: false }),
-  ENABLE_REGISTRATION: bool({ default: true }),
-  ENABLE_CARD_CREATION: bool({ default: true }),
-  ENABLE_CRYPTO_DEPOSITS: bool({ default: true }),
-  ENABLE_KYC_VERIFICATION: bool({ default: true }),
-  MAINTENANCE_MODE: bool({ default: false }),
+  ENABLE_DEBUG_LOGS: bool(),
+  MOCK_EXTERNAL_APIS: bool(),
+  ENABLE_REGISTRATION: bool(),
+  ENABLE_CARD_CREATION: bool(),
+  ENABLE_CRYPTO_DEPOSITS: bool(),
+  ENABLE_KYC_VERIFICATION: bool(),
+  MAINTENANCE_MODE: bool(),
 
   // Development/Testing
   SKIP_EMAIL_VERIFICATION: bool({ default: false }),
@@ -145,9 +143,9 @@ export const env = cleanEnv(process.env, {
   MAX_FILE_SIZE: num({ default: 5242880 }), // 5MB
   ALLOWED_FILE_TYPES: str({ default: 'image/jpeg,image/png,application/pdf' }),
 
-  // Webhook URLs (Optional for development)
-  ADMEDIACARDS_WEBHOOK_URL: url({ default: 'https://your-domain.com/api/webhooks/admediacards' }),
-  XMONEY_WEBHOOK_URL: url({ default: 'https://your-domain.com/api/webhooks/xmoney' }),
+  // Webhook URLs
+  ADMEDIACARDS_WEBHOOK_URL: url({ default: 'https://api.velocards.com/api/webhooks/admediacards' }),
+  XMONEY_WEBHOOK_URL: url({ default: 'https://api.velocards.com/api/webhooks/xmoney' }),
 });
 
 export type Env = typeof env;
@@ -161,6 +159,8 @@ export const database = {
 
 export const redis = {
   url: env.REDIS_URL,
+  upstashUrl: env.REDIS_UPSTASH_URL,
+  useUpstash: env.USE_UPSTASH_REDIS,
 } as const;
 
 export const jwt = {
@@ -228,13 +228,13 @@ export const security = {
 } as const;
 
 export const rateLimit = {
-  windowMs: env.RATE_LIMIT_WINDOW_MS,
-  maxRequests: env.RATE_LIMIT_MAX_REQUESTS,
+  whitelistIps: env.RATE_LIMIT_WHITELIST_IPS,
 } as const;
 
 export const logging = {
   level: env.LOG_LEVEL,
   sentryDsn: env.SENTRY_DSN,
+  sentryRelease: env.SENTRY_RELEASE,
 } as const;
 
 export const features = {
