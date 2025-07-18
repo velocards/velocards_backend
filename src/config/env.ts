@@ -86,6 +86,9 @@ export const env = cleanEnv(process.env, {
   RATE_LIMIT_WINDOW_MS: num({ default: 900000 }), // 15 minutes
   RATE_LIMIT_MAX_REQUESTS: num({ default: 100 }),
   RATE_LIMIT_WHITELIST_IPS: str({ default: '' }), // Comma-separated list of IPs to bypass rate limiting
+  
+  // Admin Configuration
+  ADMIN_EMAILS: str({ default: '' }), // Comma-separated list of admin emails
 
   // Logging and Monitoring
   LOG_LEVEL: str({ 
