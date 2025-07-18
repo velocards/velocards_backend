@@ -1,5 +1,4 @@
 import { Controller, Get, Route, Tags, Security, Response, SuccessResponse } from 'tsoa';
-import { UserService } from '../../services/userService';
 
 interface UserProfile {
   id: string;
@@ -85,7 +84,7 @@ export class CardsDocsController extends Controller {
   @Response<{ success: false; error: { code: string; message: string } }>(401, 'Unauthorized')
   @Response<{ success: false; error: { code: string; message: string } }>(429, 'Rate limit exceeded')
   @SuccessResponse('201', 'Card created')
-  public async createCard(@Body() requestBody: {
+  public async createCard(@Body() _requestBody: {
     card_type: 'MASTERCARD' | 'VISA';
     spending_limit?: number;
     name?: string;

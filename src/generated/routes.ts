@@ -155,7 +155,7 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsCardsDocsController_createCard: Record<string, TsoaRoute.ParameterSchema> = {
-                requestBody: {"in":"body","name":"requestBody","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string"},"spending_limit":{"dataType":"double"},"card_type":{"dataType":"union","subSchemas":[{"dataType":"enum","enums":["MASTERCARD"]},{"dataType":"enum","enums":["VISA"]}],"required":true}}},
+                _requestBody: {"in":"body","name":"_requestBody","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string"},"spending_limit":{"dataType":"double"},"card_type":{"dataType":"union","subSchemas":[{"dataType":"enum","enums":["MASTERCARD"]},{"dataType":"enum","enums":["VISA"]}],"required":true}}},
         };
         app.post('/api/v1/cards',
             authenticateMiddleware([{"Bearer":[]}]),

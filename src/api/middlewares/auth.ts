@@ -62,3 +62,41 @@ export function optionalAuth(
 
   authenticate(req, res, next);
 }
+
+// Express authentication function for tsoa
+export async function expressAuthentication(
+  request: Request,
+  securityName: string,
+  _scopes?: string[]
+): Promise<any> {
+  if (securityName === 'Bearer') {
+    const authHeader = request.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new AuthenticationError('No authorization header');
+    }
+    
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0] !== 'Bearer' || !parts[1]) {
+      throw new AuthenticationError('Invalid authorization header format');
+    }
+    
+    const token = parts[1];
+    
+    try {
+      const payload = await TokenService.verifyAccessToken(token);
+      return {
+        id: payload.sub,
+        email: payload.email,
+        sessionId: payload.sessionId,
+        sub: payload.sub,
+        ...(payload.role && { role: payload.role }),
+        ...(payload.permissions && { permissions: payload.permissions })
+      };
+    } catch (error) {
+      throw new AuthenticationError('Invalid token');
+    }
+  }
+  
+  throw new AuthenticationError('Unknown security name');
+}

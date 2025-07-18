@@ -5,18 +5,6 @@ import * as path from 'path';
 
 // This script generates comprehensive API documentation by analyzing existing routes
 
-const routeFiles = [
-  'authRoutes',
-  'userRoutes', 
-  'cardRoutes',
-  'transactionRoutes',
-  'cryptoRoutes',
-  'tierRoutes',
-  'invoiceRoutes',
-  'kycRoutes',
-  'announcementRoutes'
-];
-
 const apiEndpoints = {
   auth: [
     { method: 'POST', path: '/register', description: 'Register new user account' },
