@@ -67,26 +67,4 @@ const logger = winston.createLogger({
   ]
 });
 
-// Wrap logger methods to catch problematic calls
-const wrappedLogger = {
-  ...logger,
-  error: (message: any, ...meta: any[]) => {
-    // Debug: Log the stack trace when we get an object as message
-    if (typeof message === 'object' && message !== null && !(message instanceof Error)) {
-      console.trace('WARNING: Object passed as message to logger.error:', message);
-    }
-    return logger.error(message, ...meta);
-  },
-  warn: (message: any, ...meta: any[]) => {
-    if (typeof message === 'object' && message !== null) {
-      console.trace('WARNING: Object passed as message to logger.warn:', message);
-    }
-    return logger.warn(message, ...meta);
-  },
-  info: logger.info.bind(logger),
-  debug: logger.debug.bind(logger),
-  verbose: logger.verbose.bind(logger),
-  silly: logger.silly.bind(logger)
-};
-
-export default wrappedLogger;
+export default logger;

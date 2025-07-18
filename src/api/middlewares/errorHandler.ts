@@ -10,7 +10,7 @@ import { Request, Response, NextFunction } from 'express';
     _next: NextFunction
   ): void {
     // Log error
-    logger.error({
+    logger.error(`${err.name}: ${err.message}`, {
       error: {
         message: err.message,
         stack: err.stack,
