@@ -42,6 +42,7 @@ pm2-*.log
 backup-*.tar.gz
 *.tar.gz
 src.backup.*
+backups-archive/
 
 # Testing
 coverage/
