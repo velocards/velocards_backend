@@ -1,4 +1,4 @@
-import { queues, addRecurringJob } from '../../config/queue';
+import { queues, addRecurringJob } from '../../config/queue-optimized';
 import logger from '../../utils/logger';
 
 /**

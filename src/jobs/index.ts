@@ -14,7 +14,7 @@ import { createInvoiceWorker } from './processors/invoiceProcessor';
 import { createPasswordResetCleanupWorker } from './processors/passwordResetCleanupProcessor';
 import { createEmailVerificationCleanupWorker } from './processors/emailVerificationCleanupProcessor';
 import { initializeScheduledJobs, cleanupOldJobs } from './schedulers/jobScheduler';
-import { createQueueEvents, QUEUE_NAMES } from '../config/queue';
+import { createQueueEvents, QUEUE_NAMES } from '../config/queue-optimized';
 import logger from '../utils/logger';
 
 let workers: Worker[] = [];
