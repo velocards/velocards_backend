@@ -11,10 +11,11 @@ export const createRedisConnection = () => {
     },
     maxRetriesPerRequest: null, // Required by BullMQ
     enableReadyCheck: false,
-    connectTimeout: 10000,
-    disconnectTimeout: 2000,
-    commandTimeout: 5000,
-    keepAlive: 10000,
+    connectTimeout: 30000, // Increased for Railway
+    disconnectTimeout: 5000,
+    commandTimeout: 30000, // Increased for Railway
+    keepAlive: 30000,
+    lazyConnect: true, // Connect on demand
     reconnectOnError: (err) => {
       const targetError = 'READONLY';
       if (err.message.includes(targetError)) {
@@ -33,10 +34,10 @@ const redis = new Redis(redisConfig.url, {
   },
   maxRetriesPerRequest: 3,
   enableReadyCheck: true,
-  connectTimeout: 10000,
-  disconnectTimeout: 2000,
-  commandTimeout: 5000,
-  keepAlive: 10000,
+  connectTimeout: 30000, // Increased for Railway
+  disconnectTimeout: 5000,
+  commandTimeout: 30000, // Increased for Railway
+  keepAlive: 30000,
   reconnectOnError: (err) => {
     const targetError = 'READONLY';
     if (err.message.includes(targetError)) {

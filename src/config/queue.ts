@@ -12,6 +12,11 @@ const createRedisConnection = () => {
     const redis = new IORedis(redisUrl, {
       maxRetriesPerRequest: null, // Required by BullMQ
       enableReadyCheck: false,
+      connectTimeout: 30000, // Increased for Railway
+      disconnectTimeout: 5000,
+      commandTimeout: 30000, // Increased for Railway
+      keepAlive: 30000,
+      lazyConnect: true, // Connect on demand
       retryStrategy: (times: number) => {
         const delay = Math.min(times * 50, 2000);
         return delay;
@@ -77,31 +82,29 @@ export const DEFAULT_JOB_OPTIONS = {
   }
 };
 
-// Create queue instances
-const connection = createRedisConnection();
-
+// Create queue instances with separate connections for better performance
 export const queues = {
-  transactionSync: new Queue(QUEUE_NAMES.TRANSACTION_SYNC, { connection }),
-  cardSync: new Queue(QUEUE_NAMES.CARD_SYNC, { connection }),
-  balanceReconciliation: new Queue(QUEUE_NAMES.BALANCE_RECONCILIATION, { connection }),
-  webhookProcessing: new Queue(QUEUE_NAMES.WEBHOOK_PROCESSING, { connection }),
-  cryptoOrderSync: new Queue(QUEUE_NAMES.CRYPTO_ORDER_SYNC, { connection }),
-  cryptoOrderCheck: new Queue(QUEUE_NAMES.CRYPTO_ORDER_CHECK, { connection }),
-  userBalanceUpdate: new Queue(QUEUE_NAMES.USER_BALANCE_UPDATE, { connection }),
-  sessionCleanup: new Queue(QUEUE_NAMES.SESSION_CLEANUP, { connection }),
-  sessionMonitoring: new Queue(QUEUE_NAMES.SESSION_MONITORING, { connection }),
-  emailNotifications: new Queue(QUEUE_NAMES.EMAIL_NOTIFICATIONS, { connection }),
-  dailyReports: new Queue(QUEUE_NAMES.DAILY_REPORTS, { connection }),
-  tierUpgrade: new Queue(QUEUE_NAMES.TIER_UPGRADE, { connection }),
-  monthlyFeeProcessing: new Queue(QUEUE_NAMES.MONTHLY_FEE_PROCESSING, { connection }),
-  invoiceProcessing: new Queue(QUEUE_NAMES.INVOICE_PROCESSING, { connection }),
-  passwordResetCleanup: new Queue(QUEUE_NAMES.PASSWORD_RESET_CLEANUP, { connection }),
-  emailVerificationCleanup: new Queue(QUEUE_NAMES.EMAIL_VERIFICATION_CLEANUP, { connection })
+  transactionSync: new Queue(QUEUE_NAMES.TRANSACTION_SYNC, { connection: createRedisConnection() }),
+  cardSync: new Queue(QUEUE_NAMES.CARD_SYNC, { connection: createRedisConnection() }),
+  balanceReconciliation: new Queue(QUEUE_NAMES.BALANCE_RECONCILIATION, { connection: createRedisConnection() }),
+  webhookProcessing: new Queue(QUEUE_NAMES.WEBHOOK_PROCESSING, { connection: createRedisConnection() }),
+  cryptoOrderSync: new Queue(QUEUE_NAMES.CRYPTO_ORDER_SYNC, { connection: createRedisConnection() }),
+  cryptoOrderCheck: new Queue(QUEUE_NAMES.CRYPTO_ORDER_CHECK, { connection: createRedisConnection() }),
+  userBalanceUpdate: new Queue(QUEUE_NAMES.USER_BALANCE_UPDATE, { connection: createRedisConnection() }),
+  sessionCleanup: new Queue(QUEUE_NAMES.SESSION_CLEANUP, { connection: createRedisConnection() }),
+  sessionMonitoring: new Queue(QUEUE_NAMES.SESSION_MONITORING, { connection: createRedisConnection() }),
+  emailNotifications: new Queue(QUEUE_NAMES.EMAIL_NOTIFICATIONS, { connection: createRedisConnection() }),
+  dailyReports: new Queue(QUEUE_NAMES.DAILY_REPORTS, { connection: createRedisConnection() }),
+  tierUpgrade: new Queue(QUEUE_NAMES.TIER_UPGRADE, { connection: createRedisConnection() }),
+  monthlyFeeProcessing: new Queue(QUEUE_NAMES.MONTHLY_FEE_PROCESSING, { connection: createRedisConnection() }),
+  invoiceProcessing: new Queue(QUEUE_NAMES.INVOICE_PROCESSING, { connection: createRedisConnection() }),
+  passwordResetCleanup: new Queue(QUEUE_NAMES.PASSWORD_RESET_CLEANUP, { connection: createRedisConnection() }),
+  emailVerificationCleanup: new Queue(QUEUE_NAMES.EMAIL_VERIFICATION_CLEANUP, { connection: createRedisConnection() })
 };
 
 // Queue event monitoring
 export const createQueueEvents = (queueName: string) => {
-  const queueEvents = new QueueEvents(queueName, { connection });
+  const queueEvents = new QueueEvents(queueName, { connection: createRedisConnection() });
   
   queueEvents.on('completed', ({ jobId, returnvalue }) => {
     logger.info(`Job ${jobId} in queue ${queueName} completed`, { returnvalue });
@@ -149,11 +152,8 @@ export const shutdownQueues = async () => {
   
   const allQueues = Object.values(queues);
   
-  // Close all queues
+  // Close all queues (this will also close their Redis connections)
   await Promise.all(allQueues.map(queue => queue.close()));
-  
-  // Close Redis connection
-  connection.disconnect();
   
   logger.info('Job queues shut down successfully');
 };

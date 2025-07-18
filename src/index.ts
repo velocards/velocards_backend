@@ -158,6 +158,7 @@ import dotenv from 'dotenv';
   // Start server
   async function startServer() {
     try {
+      // Force Railway rebuild - remove this comment after deploy
       // Test database connection
       await testDatabaseConnection();
 
