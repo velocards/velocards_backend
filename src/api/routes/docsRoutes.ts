@@ -1,14 +1,29 @@
 import { Router } from 'express';
 import swaggerUi from 'swagger-ui-express';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const router = Router();
 
 // Function to load swagger document
 function loadSwaggerDocument() {
   try {
-    // Try to import the generated swagger.json directly
-    // This will be bundled by TypeScript automatically
-    return require('../../swagger/swagger.json');
+    // In production, the swagger.json needs to be explicitly included
+    const swaggerPath = path.join(__dirname, '../../swagger/swagger.json');
+    
+    if (fs.existsSync(swaggerPath)) {
+      const swaggerContent = fs.readFileSync(swaggerPath, 'utf8');
+      return JSON.parse(swaggerContent);
+    }
+    
+    // If not found, try the source directory (for development)
+    const devPath = path.join(process.cwd(), 'src/swagger/swagger.json');
+    if (fs.existsSync(devPath)) {
+      const swaggerContent = fs.readFileSync(devPath, 'utf8');
+      return JSON.parse(swaggerContent);
+    }
+    
+    throw new Error('swagger.json not found');
   } catch (error) {
     console.error('Failed to load swagger.json:', error);
     // Return a minimal valid OpenAPI document if not found
