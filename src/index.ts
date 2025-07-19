@@ -113,10 +113,7 @@ import dotenv from 'dotenv';
   app.use(cors({
     origin: env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()),
     credentials: true,
-    optionsSuccessStatus: 200, // Some legacy browsers choke on 204
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
-    maxAge: 86400 // Cache preflight response for 1 day
+    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
   }));
   app.use(compression());
   app.use(express.json());
