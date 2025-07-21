@@ -4,7 +4,7 @@ import { authenticate } from '../middlewares/auth';
 import { authorize } from '../middlewares/authorize';
 import { validate } from '../middlewares/validate';
 import { generateCSRFToken } from '../middlewares/csrf';
-import { registerSchema, loginSchema, refreshTokenSchema, forgotPasswordSchema, resetPasswordSchema, verifyEmailSchema, resendVerificationSchema, changePasswordSchema } from '../validators/authValidators';
+import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, verifyEmailSchema, resendVerificationSchema, changePasswordSchema } from '../validators/authValidators';
 import { authLimiter, strictLimiter } from '../middlewares/rateLimiter';
 import { PERMISSIONS } from '../../config/roles';
 
@@ -25,7 +25,7 @@ router.post('/login',
 
 router.post('/refresh',
   authLimiter, // 5 requests per 15 minutes
-  validate(refreshTokenSchema),
+  // No validation needed - refresh token comes from httpOnly cookie
   AuthController.refreshToken.bind(AuthController)
 );
 

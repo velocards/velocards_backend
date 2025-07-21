@@ -137,8 +137,8 @@ export class AuthController {
 
   static async refreshToken(req: Request<{}, {}, RefreshTokenInput>, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Get refresh token from cookie first (more secure), then fallback to body
-      const refreshToken = req.cookies?.['refreshToken'] || req.body.refreshToken;
+      // Get refresh token from cookie only (more secure)
+      const refreshToken = req.cookies?.['refreshToken'];
       
       if (!refreshToken) {
         sendError(res, 'REFRESH_TOKEN_REQUIRED', 'Refresh token is required', 400);
