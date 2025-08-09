@@ -30,10 +30,13 @@ export class TwoFactorController {
   // POST /api/v2/auth/2fa/setup - Initialize 2FA setup
   async setup(req: Request, res: Response): Promise<void> {
     try {
-      const { email } = twoFactorSetupSchema.parse(req.body);
+      // Validate request body (empty object expected)
+      twoFactorSetupSchema.parse(req.body);
+      
       const userId = (req as any).user?.id;
+      const email = (req as any).user?.email;
 
-      if (!userId) {
+      if (!userId || !email) {
         res.status(401).json({ success: false, error: 'Unauthorized' });
         return;
       }

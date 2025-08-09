@@ -17,10 +17,8 @@ export const passwordVerificationSchema = z.object({
     .max(100, 'Password is too long')
 });
 
-// 2FA setup request schema
-export const twoFactorSetupSchema = z.object({
-  email: z.string().email('Valid email is required')
-});
+// 2FA setup request schema - no body required, user identified by JWT
+export const twoFactorSetupSchema = z.object({});
 
 // 2FA enable request schema
 export const twoFactorEnableSchema = z.object({
