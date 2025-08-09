@@ -56,17 +56,22 @@ export class TwoFactorController {
       const setupData = await this.twoFactorService.setupTwoFactor(email);
 
       // Store temporary 2FA data (not enabled yet)
+      // Encrypt the secret before storing
+      const encryptedSecret = this.twoFactorService.encryptSecret(setupData.secret);
+      const encryptedBackupCodes = this.twoFactorService.encryptBackupCodes(setupData.backupCodes);
+      
       if (existing2FA) {
         await this.twoFactorRepository.updateTwoFactorAuth(userId, {
-          secret: setupData.secret,
-          backupCodes: this.twoFactorService.encryptBackupCodes(setupData.backupCodes),
-          isEnabled: false
+          secret: encryptedSecret,
+          backupCodes: encryptedBackupCodes,
+          isEnabled: false,
+          setupInitiatedAt: new Date()  // Track when setup was initiated
         });
       } else {
         await this.twoFactorRepository.createTwoFactorAuth(
           userId,
-          setupData.secret,
-          setupData.backupCodes
+          encryptedSecret,
+          encryptedBackupCodes
         );
       }
 
@@ -102,8 +107,11 @@ export class TwoFactorController {
   // POST /api/v2/auth/2fa/enable - Enable 2FA with TOTP verification
   async enable(req: Request, res: Response): Promise<void> {
     try {
+      console.log('2FA Enable Request Body:', req.body);
       const { totpCode, password } = twoFactorEnableSchema.parse(req.body);
       const userId = (req as any).user?.id;
+
+      console.log('Parsed values:', { totpCode, hasPassword: !!password, userId });
 
       if (!userId) {
         res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -146,15 +154,36 @@ export class TwoFactorController {
         return;
       }
 
+      // Check if setup has expired (10 minutes)
+      const setupTime = twoFAData.setupInitiatedAt || twoFAData.createdAt;
+      const setupAge = Date.now() - new Date(setupTime).getTime();
+      const TEN_MINUTES = 10 * 60 * 1000;
+      
+      if (setupAge > TEN_MINUTES) {
+        await TwoFactorAuditService.logEnableAttempt(userId, req, false, 'Setup expired');
+        res.status(400).json({ 
+          success: false, 
+          error: 'Setup has expired. Please start the 2FA setup process again.' 
+        });
+        return;
+      }
+
       // Verify TOTP code
       const decryptedSecret = this.twoFactorService.decryptSecret(twoFAData.secret);
+      console.log('Verifying TOTP:', { 
+        totpCode, 
+        secretLength: decryptedSecret?.length,
+        hasSecret: !!decryptedSecret 
+      });
+      
       const isValidCode = this.twoFactorService.verifyTOTP(decryptedSecret, totpCode);
+      console.log('TOTP verification result:', isValidCode);
 
       if (!isValidCode) {
         await TwoFactorAuditService.logEnableAttempt(userId, req, false, 'Invalid TOTP code');
         res.status(400).json({ 
           success: false, 
-          error: 'Invalid verification code' 
+          error: 'Invalid verification code. Please ensure you\'re using the latest code from your authenticator app.' 
         });
         return;
       }

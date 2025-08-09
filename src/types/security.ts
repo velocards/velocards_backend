@@ -5,6 +5,7 @@ export interface TwoFactorAuthData {
   backupCodes: string[];
   isEnabled: boolean;
   lastUsed: Date | null;
+  setupInitiatedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
