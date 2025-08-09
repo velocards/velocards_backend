@@ -76,3 +76,13 @@ export const getAdminAnnouncementsSchema = z.object({
     priority: prioritySchema.optional()
   })
 });
+
+// Inferred TypeScript types
+export type AnnouncementCategory = z.infer<typeof categorySchema>;
+export type AnnouncementPriority = z.infer<typeof prioritySchema>;
+export type TargetAudience = z.infer<typeof targetAudienceSchema>;
+export type GetAnnouncementsQuery = z.infer<typeof getAnnouncementsSchema>['query'];
+export type CreateAnnouncementInput = z.infer<typeof createAnnouncementSchema>['body'];
+export type UpdateAnnouncementInput = z.infer<typeof updateAnnouncementSchema>['body'];
+export type AnnouncementIdParams = z.infer<typeof announcementIdSchema>['params'];
+export type GetAdminAnnouncementsQuery = z.infer<typeof getAdminAnnouncementsSchema>['query'];

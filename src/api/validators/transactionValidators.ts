@@ -32,7 +32,11 @@ export const getTransactionHistorySchema = z.object({
     to_date: z.string().datetime().optional(),
     min_amount: z.string().regex(/^\d+(\.\d{1,2})?$/).transform(Number).optional(),
     max_amount: z.string().regex(/^\d+(\.\d{1,2})?$/).transform(Number).optional(),
-    merchant_name: z.string().min(1).max(255).optional()
+    merchant_name: z.string()
+      .min(1)
+      .max(255)
+      .regex(/^[a-zA-Z0-9\s\-\.\,\&\']+$/, 'Merchant name contains invalid characters')
+      .optional()
   })
 });
 
@@ -84,7 +88,11 @@ export const exportTransactionsSchema = z.object({
     to_date: z.string().datetime().optional(),
     min_amount: z.string().regex(/^\d+(\.\d{1,2})?$/).transform(Number).optional(),
     max_amount: z.string().regex(/^\d+(\.\d{1,2})?$/).transform(Number).optional(),
-    merchant_name: z.string().min(1).max(255).optional()
+    merchant_name: z.string()
+      .min(1)
+      .max(255)
+      .regex(/^[a-zA-Z0-9\s\-\.\,\&\']+$/, 'Merchant name contains invalid characters')
+      .optional()
   })
 });
 
@@ -123,3 +131,14 @@ export const refinePagination = (data: any) => {
     }
   };
 };
+
+// Inferred TypeScript types
+export type TransactionType = z.infer<typeof TransactionTypeEnum>;
+export type TransactionStatus = z.infer<typeof TransactionStatusEnum>;
+export type TransactionHistoryQuery = z.infer<typeof getTransactionHistorySchema>['query'];
+export type TransactionDetailsParams = z.infer<typeof getTransactionDetailsSchema>['params'];
+export type CardTransactionsParams = z.infer<typeof getCardTransactionsSchema>['params'];
+export type CardTransactionsQuery = z.infer<typeof getCardTransactionsSchema>['query'];
+export type DisputeTransactionInput = z.infer<typeof disputeTransactionSchema>['body'];
+export type ExportTransactionsQuery = z.infer<typeof exportTransactionsSchema>['query'];
+export type CreateMockTransactionInput = z.infer<typeof createMockTransactionSchema>['body'];

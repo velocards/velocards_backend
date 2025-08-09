@@ -97,6 +97,16 @@ export class AuthController {
 
       const result = await UserService.login(req.body, req);
       
+      // Check if 2FA is required
+      if (result.requiresTwoFactor) {
+        sendSuccess(res, {
+          user: result.user,
+          requiresTwoFactor: true,
+          message: result.message || 'Two-factor authentication required'
+        });
+        return;
+      }
+
       // Set tokens as httpOnly cookies
       res.cookie('accessToken', result.tokens.accessToken, {
         httpOnly: true,

@@ -106,7 +106,12 @@ export class TransactionRepository {
         query = query.lte('amount', filters.max_amount);
       }
       if (filters.merchant_name) {
-        query = query.ilike('merchant_name', `%${filters.merchant_name}%`);
+        // Escape special characters in LIKE patterns to prevent injection
+        const escapedMerchantName = filters.merchant_name
+          .replace(/\\/g, '\\\\')  // Escape backslashes first
+          .replace(/%/g, '\\%')     // Escape percent signs
+          .replace(/_/g, '\\_');    // Escape underscores
+        query = query.ilike('merchant_name', `%${escapedMerchantName}%`);
       }
 
       // Apply ordering

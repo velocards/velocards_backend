@@ -5,20 +5,23 @@ import { PasswordService } from './passwordService';
 import { TokenService } from './tokenService';
 import tierService from './tierService';
 import { SecurityLoggingService } from './securityLoggingService';
+import { TwoFactorRepository } from '../repositories/security/twoFactorRepository';
 import { AuthenticationError, ConflictError, NotFoundError, ValidationError, AppError } from '../utils/errors';
 import { RegisterInput, LoginInput } from '../api/validators/authValidators';
+import { 
+  UpdateSettingsInput as UserSettings,
+  BalanceHistoryQuery 
+} from '../api/validators/userValidators';
 import { UserRole, getDefaultRole } from '../config/roles';
 import logger from '../utils/logger';
 import { supabase } from '../config/database';
 
-export interface BalanceHistoryParams {
-  page: number;
-  limit: number;
-  from?: Date;
-  to?: Date;
-  type: string;
-  sortBy: string;
-  sortOrder: 'asc' | 'desc';
+// Use the inferred type from Zod schema with proper field mappings
+export interface BalanceHistoryParams extends Omit<BalanceHistoryQuery, 'from' | 'to'> {
+  page: number;  // Transformed from string by Zod
+  limit: number; // Transformed from string by Zod
+  from?: Date;   // Converted from string to Date
+  to?: Date;     // Converted from string to Date
 }
 
 export interface BalanceHistoryResult {
@@ -27,40 +30,6 @@ export interface BalanceHistoryResult {
   limit: number;
   total: number;
   totalPages: number;
-}
-
-export interface UserSettings {
-  notifications?: {
-    email?: {
-      transactions?: boolean;
-      security?: boolean;
-      marketing?: boolean;
-      updates?: boolean;
-    };
-    sms?: {
-      transactions?: boolean;
-      security?: boolean;
-    };
-    push?: {
-      transactions?: boolean;
-      security?: boolean;
-      updates?: boolean;
-    };
-  };
-  security?: {
-    twoFactorEnabled?: boolean;
-    loginAlerts?: boolean;
-    transactionAlerts?: boolean;
-    ipWhitelisting?: boolean;
-    allowedIps?: string[];
-  };
-  preferences?: {
-    language?: string;
-    currency?: string;
-    timezone?: string;
-    dateFormat?: string;
-    theme?: string;
-  };
 }
 
 export interface UserPublicData {
@@ -198,6 +167,21 @@ export class UserService {
         throw new AuthenticationError('Please verify your email before logging in');
       }
 
+      // Check if 2FA is enabled for this user
+      const twoFactorRepo = new TwoFactorRepository();
+      const twoFactorAuth = await twoFactorRepo.getTwoFactorAuth(user.id);
+      
+      if (twoFactorAuth?.isEnabled) {
+        // User has 2FA enabled - return a partial success requiring 2FA verification
+        logger.info(`User requires 2FA verification: ${user.email}`);
+        
+        return {
+          user: this.formatUserResponse(user),
+          requiresTwoFactor: true,
+          message: 'Two-factor authentication required'
+        };
+      }
+
       // Record successful login
       if (req) {
         await SecurityLoggingService.logSuccessfulLogin(user.id, user.email, req);
@@ -215,6 +199,36 @@ export class UserService {
       const tokens = await TokenService.generateTokenPair(user.id, user.email, user.role as UserRole);
 
       logger.info(`User logged in: ${user.email}`);
+
+      return {
+        user: this.formatUserResponse(user),
+        tokens
+      };
+    }
+
+    static async completeTwoFactorLogin(userId: string, req?: any) {
+      const user = await UserRepository.findById(userId);
+      if (!user) {
+        throw new AuthenticationError('User not found');
+      }
+
+      // Record successful 2FA login
+      if (req) {
+        await SecurityLoggingService.logSuccessfulLogin(user.id, user.email, req);
+      } else {
+        // Fallback to old method if no request object
+        await UserRepository.recordAuthEvent(
+          user.id,
+          'login_success',
+          undefined,
+          undefined
+        );
+      }
+
+      // Generate tokens with role
+      const tokens = await TokenService.generateTokenPair(user.id, user.email, user.role as UserRole);
+
+      logger.info(`User completed 2FA login: ${user.email}`);
 
       return {
         user: this.formatUserResponse(user),

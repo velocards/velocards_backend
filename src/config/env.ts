@@ -112,7 +112,6 @@ export const env = cleanEnv(process.env, {
   ENABLE_CRYPTO_DEPOSITS: bool(),
   ENABLE_KYC_VERIFICATION: bool(),
   MAINTENANCE_MODE: bool(),
-  USE_ZOD_VALIDATOR: bool({ default: true }), // Feature flag for Joi/Zod selection
 
   // Development/Testing
   SKIP_EMAIL_VERIFICATION: bool({ default: false }),
@@ -248,7 +247,6 @@ export const features = {
   maintenanceMode: env.MAINTENANCE_MODE,
   skipEmailVerification: env.SKIP_EMAIL_VERIFICATION,
   skipKycInDev: env.SKIP_KYC_IN_DEV,
-  useZodValidator: env.USE_ZOD_VALIDATOR,
 } as const;
 
 export const upload = {

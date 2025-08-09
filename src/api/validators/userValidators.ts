@@ -96,3 +96,8 @@ export const balanceHistoryQuerySchema = z.object({
       .default('desc')
   })
 });
+
+// Inferred TypeScript types
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>['body'];
+export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>['body'];
+export type BalanceHistoryQuery = z.infer<typeof balanceHistoryQuerySchema>['query'];

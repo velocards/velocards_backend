@@ -1,4 +1,4 @@
-import winston from 'winston';
+import * as winston from 'winston';
 import { logging } from '../config/env';
 
 const logger = winston.createLogger({

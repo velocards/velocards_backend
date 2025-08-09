@@ -45,7 +45,8 @@ export class TokenService {
       jwtConfig.accessSecret,
       {
         expiresIn: jwtConfig.accessExpiry,
-        issuer: 'digistreets'
+        issuer: 'digistreets',
+        algorithm: 'HS256'
       } as jwt.SignOptions
     );
 
@@ -60,7 +61,8 @@ export class TokenService {
       jwtConfig.refreshSecret,
       {
         expiresIn: jwtConfig.refreshExpiry,
-        issuer: 'digistreets'
+        issuer: 'digistreets',
+        algorithm: 'HS256'
       } as jwt.SignOptions
     );
 
@@ -97,7 +99,10 @@ export class TokenService {
 
   static async verifyAccessToken(token: string): Promise<AccessTokenPayload> {
     try {
-      const payload = jwt.verify(token, jwtConfig.accessSecret) as AccessTokenPayload;
+      const payload = jwt.verify(token, jwtConfig.accessSecret, {
+        algorithms: ['HS256'],
+        issuer: 'digistreets'
+      }) as AccessTokenPayload;
 
       // Check if session exists (only if Redis is available)
       try {
@@ -121,7 +126,10 @@ export class TokenService {
 
   static async verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
     try {
-      const payload = jwt.verify(token, jwtConfig.refreshSecret) as RefreshTokenPayload;
+      const payload = jwt.verify(token, jwtConfig.refreshSecret, {
+        algorithms: ['HS256'],
+        issuer: 'digistreets'
+      }) as RefreshTokenPayload;
 
       // Check if refresh token exists in Redis (if Redis is available)
       try {

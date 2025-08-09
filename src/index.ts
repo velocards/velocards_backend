@@ -42,6 +42,7 @@ import dotenv from 'dotenv';
   import announcementRoutes from './api/routes/announcementRoutes';
   import bullDashboard from './api/routes/bullDashboard';
   import docsRoutes from './api/routes/docsRoutes';
+  import v2Routes from './api/routes/v2';
 
   // Import job workers
   import { startJobWorkers, stopJobWorkers } from './jobs';
@@ -110,10 +111,30 @@ import dotenv from 'dotenv';
     next();
   });
   
+  // Configure CORS with proper origin validation
+  const allowedOrigins = env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+  
+  // Add localhost for development only
+  if (env.NODE_ENV === 'development') {
+    allowedOrigins.push('http://localhost:3000');
+  }
+  
   app.use(cors({
-    origin: env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()),
+    origin: function(origin, callback) {
+      // Allow requests with no origin (like mobile apps or Postman)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
-    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+    optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Request-ID'],
+    exposedHeaders: ['X-Request-ID']
   }));
   app.use(compression());
   app.use(express.json());
@@ -147,6 +168,9 @@ import dotenv from 'dotenv';
   app.use('/api/v1/invoices', csrfProtection, invoiceRoutes);
   app.use('/api/v1/kyc', csrfProtection, kycRoutes);
   app.use('/api/v1/announcements', csrfProtection, announcementRoutes);
+
+  // API v2 Routes (with CSRF protection)
+  app.use('/api/v2', csrfProtection, v2Routes);
   
   // Webhook routes (no /api/v1 prefix, mounted directly, no CSRF)
   app.use('/webhooks', webhookRoutes);

@@ -6,3 +6,7 @@ export const calculateFeesSchema = z.object({
     amount: z.number().min(0).optional()
   })
 });
+
+// Inferred TypeScript types
+export type CalculateFeesInput = z.infer<typeof calculateFeesSchema>['body'];
+export type FeeAction = z.infer<typeof calculateFeesSchema>['body']['action'];

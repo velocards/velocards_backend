@@ -14,36 +14,7 @@ import supabase from '../config/database';
 import { cardConfig } from '../config/env';
 import tierService from './tierService';
 import pricingService from './pricingService';
-
-export interface CreateCardInput {
-  // Card Configuration
-  type: 'single_use' | 'multi_use';
-  fundingAmount: number;
-  spendingLimit?: number;
-  expiresIn?: number; // days
-  programId: number; // BIN/Program ID from Admediacards
-  
-  // Cardholder Information - ALL REQUIRED
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  
-  // Billing Address - ALL REQUIRED
-  streetAddress: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  
-  // Optional
-  nickname?: string;
-  merchantRestrictions?: {
-    allowedCategories?: string[];
-    blockedCategories?: string[];
-    allowedMerchants?: string[];
-    blockedMerchants?: string[];
-  };
-}
+import { CreateCardInput } from '../api/validators/cardValidators';
 
 export interface CardDetails {
   id: string;
@@ -329,7 +300,22 @@ export class CardService {
       }
       
       if (input.merchantRestrictions) {
-        cardData.merchant_restrictions = input.merchantRestrictions;
+        const restrictions: any = {};
+        if (input.merchantRestrictions.allowedCategories) {
+          restrictions.allowedCategories = input.merchantRestrictions.allowedCategories;
+        }
+        if (input.merchantRestrictions.blockedCategories) {
+          restrictions.blockedCategories = input.merchantRestrictions.blockedCategories;
+        }
+        if (input.merchantRestrictions.allowedMerchants) {
+          restrictions.allowedMerchants = input.merchantRestrictions.allowedMerchants;
+        }
+        if (input.merchantRestrictions.blockedMerchants) {
+          restrictions.blockedMerchants = input.merchantRestrictions.blockedMerchants;
+        }
+        if (Object.keys(restrictions).length > 0) {
+          cardData.merchant_restrictions = restrictions;
+        }
       }
       
       if (expiresAt) {

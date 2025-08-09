@@ -12,6 +12,9 @@ import { CardRepository } from '../repositories/cardRepository';
 import { NotFoundError, ForbiddenError, ValidationError } from '../utils/errors';
 import logger from '../utils/logger';
 import { Parser } from 'json2csv';
+import { 
+  DisputeTransactionInput as DisputeInput
+} from '../api/validators/transactionValidators';
 
 export interface TransactionListResponse {
   transactions: Transaction[];
@@ -21,10 +24,6 @@ export interface TransactionListResponse {
     total: number;
     totalPages: number;
   };
-}
-
-export interface DisputeInput {
-  reason: string;
 }
 
 export interface ExportOptions {

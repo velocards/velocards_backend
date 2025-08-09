@@ -155,3 +155,11 @@ export const getSecureCardDetailsSchema = z.object({
     field: z.string().optional() // Not used but kept for future flexibility
   })
 });
+
+// Inferred TypeScript types
+export type CreateCardInput = z.infer<typeof createCardSchema>['body'];
+export type UpdateCardLimitsInput = z.infer<typeof updateCardLimitsSchema>['body'];
+export type CardIdParam = z.infer<typeof cardIdParamSchema>['params'];
+export type CardTransactionsQuery = z.infer<typeof cardTransactionsQuerySchema>['query'];
+export type CreateCardSessionInput = z.infer<typeof createCardSessionSchema>['body'];
+export type GetSecureCardDetailsInput = z.infer<typeof getSecureCardDetailsSchema>['body'];
