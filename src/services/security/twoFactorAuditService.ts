@@ -260,12 +260,12 @@ export class TwoFactorAuditService {
       
       for (let i = 0; i < Math.min(data.length, 10); i++) {
         const event = data[i];
-        if (event.event_details?.ipAddress) {
+        if (event && event.event_details?.ipAddress) {
           ipAddresses.add(event.event_details.ipAddress);
         }
         
         // Check if multiple different IPs in short time
-        if (i > 0 && ipAddresses.size > 3) {
+        if (i > 0 && ipAddresses.size > 3 && data[0] && event) {
           const timeDiff = new Date(data[0].timestamp).getTime() - new Date(event.timestamp).getTime();
           if (timeDiff < 30 * 60 * 1000) { // 30 minutes
             rapidLocationChange = true;

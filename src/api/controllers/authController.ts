@@ -107,39 +107,46 @@ export class AuthController {
         return;
       }
 
-      // Set tokens as httpOnly cookies
-      res.cookie('accessToken', result.tokens.accessToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 15 * 60 * 1000, // 15 minutes
-        path: '/'
-      });
-      
-      res.cookie('refreshToken', result.tokens.refreshToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        path: '/'
-      });
-      
-      // Set auth mode cookie for frontend to detect secure mode
-      res.cookie('auth_mode', 'secure', {
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        path: '/'
-      });
+      // Check if tokens exist before setting cookies
+      if (result.tokens) {
+        // Set tokens as httpOnly cookies
+        res.cookie('accessToken', result.tokens.accessToken, {
+          httpOnly: true,
+          secure: env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 15 * 60 * 1000, // 15 minutes
+          path: '/'
+        });
+        
+        res.cookie('refreshToken', result.tokens.refreshToken, {
+          httpOnly: true,
+          secure: env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+          path: '/'
+        });
+        
+        // Set auth mode cookie for frontend to detect secure mode
+        res.cookie('auth_mode', 'secure', {
+          secure: env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+          path: '/'
+        });
 
-      sendSuccess(res, {
-        user: result.user,
-        // Only include tokens in response if client doesn't support cookies (for backward compatibility)
-        ...(req.headers['x-auth-mode'] !== 'secure' && {
-          accessToken: result.tokens.accessToken,
-          expiresIn: result.tokens.expiresIn
-        })
-      });
+        sendSuccess(res, {
+          user: result.user,
+          // Only include tokens in response if client doesn't support cookies (for backward compatibility)
+          ...(req.headers['x-auth-mode'] !== 'secure' && {
+            accessToken: result.tokens.accessToken,
+            expiresIn: result.tokens.expiresIn
+          })
+        });
+      } else {
+        sendSuccess(res, {
+          user: result.user
+        });
+      }
     } catch (error) {
       next(error);
     }
