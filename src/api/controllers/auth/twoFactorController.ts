@@ -81,6 +81,7 @@ export class TwoFactorController {
       res.json({
         success: true,
         data: {
+          secret: setupData.secret,  // Add the secret for manual entry
           qrCode: setupData.qrCode,
           backupCodes: setupData.backupCodes
         }
@@ -108,10 +109,12 @@ export class TwoFactorController {
   async enable(req: Request, res: Response): Promise<void> {
     try {
       console.log('2FA Enable Request Body:', req.body);
+      console.log('Request headers:', req.headers);
       const { totpCode, password } = twoFactorEnableSchema.parse(req.body);
       const userId = (req as any).user?.id;
+      const userEmail = (req as any).user?.email;
 
-      console.log('Parsed values:', { totpCode, hasPassword: !!password, userId });
+      console.log('Parsed values:', { totpCode, hasPassword: !!password, userId, userEmail });
 
       if (!userId) {
         res.status(401).json({ success: false, error: 'Unauthorized' });
