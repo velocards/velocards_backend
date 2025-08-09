@@ -169,7 +169,19 @@ export class TwoFactorController {
       }
 
       // Verify TOTP code
-      const decryptedSecret = this.twoFactorService.decryptSecret(twoFAData.secret);
+      let decryptedSecret: string;
+      try {
+        decryptedSecret = this.twoFactorService.decryptSecret(twoFAData.secret);
+        console.log('Secret decrypted successfully, length:', decryptedSecret?.length);
+      } catch (decryptError: any) {
+        console.error('Failed to decrypt secret:', decryptError.message);
+        res.status(500).json({ 
+          success: false, 
+          error: 'Configuration error. Please restart the 2FA setup process.' 
+        });
+        return;
+      }
+      
       console.log('Verifying TOTP:', { 
         totpCode, 
         secretLength: decryptedSecret?.length,
