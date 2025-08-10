@@ -27,16 +27,81 @@ export interface AuditLog {
 }
 
 export interface SecurityEvent {
-  event_type: 'failed_login' | 'suspicious_activity' | 'permission_denied' | 'rate_limit_exceeded' | 'invalid_signature';
+  event_type: 'failed_login' | 'suspicious_activity' | 'permission_denied' | 'rate_limit_exceeded' | 'invalid_signature' |
+    'brute_force_detected' | 'ip_anomaly' | 'unusual_access_pattern' | 'concurrent_sessions' | 'data_export';
   severity: 'low' | 'medium' | 'high' | 'critical';
   user_id?: string;
   ip_address?: string;
   details: Record<string, any>;
 }
 
+export type EventCategory = 'AUTH' | 'ACCESS' | 'MODIFICATION' | 'ANOMALY';
+export type EventSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
 export class AuditService {
+  // Event type categorization
+  private static eventCategories: Record<string, EventCategory> = {
+    'auth.login': 'AUTH',
+    'auth.logout': 'AUTH',
+    'auth.register': 'AUTH',
+    'auth.password_reset': 'AUTH',
+    'auth.password_change': 'AUTH',
+    'auth.2fa_enabled': 'AUTH',
+    'auth.2fa_disabled': 'AUTH',
+    'card.create': 'MODIFICATION',
+    'card.update': 'MODIFICATION',
+    'card.delete': 'MODIFICATION',
+    'card.view': 'ACCESS',
+    'card.view_details': 'ACCESS',
+    'card.freeze': 'MODIFICATION',
+    'card.unfreeze': 'MODIFICATION',
+    'financial.deposit': 'MODIFICATION',
+    'financial.withdraw': 'MODIFICATION',
+    'financial.transfer': 'MODIFICATION',
+    'financial.payment': 'MODIFICATION',
+    'user.update': 'MODIFICATION',
+    'user.delete': 'MODIFICATION',
+    'settings.changed': 'MODIFICATION',
+    'data.export': 'ACCESS',
+    'api.call': 'ACCESS',
+    'rate_limit.exceeded': 'ANOMALY',
+    'security.brute_force': 'ANOMALY',
+    'security.ip_anomaly': 'ANOMALY',
+    'security.unusual_pattern': 'ANOMALY'
+  };
+
+  // Severity assignment based on event type
+  private static eventSeverity: Record<string, EventSeverity> = {
+    'auth.login_failed': 'MEDIUM',
+    'auth.password_reset': 'MEDIUM',
+    'auth.2fa_disabled': 'HIGH',
+    'card.view_details': 'LOW',
+    'card.delete': 'HIGH',
+    'financial.withdraw': 'HIGH',
+    'financial.transfer': 'HIGH',
+    'user.delete': 'CRITICAL',
+    'data.export': 'MEDIUM',
+    'rate_limit.exceeded': 'MEDIUM',
+    'security.brute_force': 'CRITICAL',
+    'security.ip_anomaly': 'MEDIUM',
+    'security.unusual_pattern': 'HIGH'
+  };
   /**
-   * Log an audit event
+   * Get event category
+   */
+  static getEventCategory(action: string): EventCategory {
+    return this.eventCategories[action] || 'ACCESS';
+  }
+
+  /**
+   * Get event severity
+   */
+  static getEventSeverity(action: string): EventSeverity {
+    return this.eventSeverity[action] || 'LOW';
+  }
+
+  /**
+   * Log an audit event with enhanced metadata
    */
   static async log(auditLog: Partial<AuditLog>): Promise<void> {
     try {
@@ -48,13 +113,20 @@ export class AuditService {
         ...auditLog
       } as AuditLog;
       
+      // Add event categorization to metadata
+      const enhancedMetadata = {
+        ...log.metadata,
+        event_category: this.getEventCategory(log.action),
+        event_severity: this.getEventSeverity(log.action)
+      };
+
       // Insert into database
       const { error } = await supabase
         .from('security_audit_logs')
         .insert({
           ...log,
           request_body: log.request_body ? JSON.stringify(log.request_body) : null,
-          metadata: log.metadata ? JSON.stringify(log.metadata) : null
+          metadata: JSON.stringify(enhancedMetadata)
         });
       
       if (error) {

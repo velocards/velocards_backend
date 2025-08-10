@@ -112,3 +112,84 @@ export function clearSentryUser() {
 export function addSentryContext(key: string, context: any) {
   Sentry.setContext(key, context);
 }
+
+// Helper to capture security events
+export function captureSecurityEvent(
+  eventType: string,
+  severity: 'low' | 'medium' | 'high' | 'critical',
+  details: any
+) {
+  const level = severity === 'critical' ? 'error' : 
+                severity === 'high' ? 'warning' : 'info';
+  
+  Sentry.captureMessage(`Security Event: ${eventType}`, {
+    level: level as any,
+    tags: {
+      security_event: 'true',
+      event_type: eventType,
+      event_severity: severity
+    },
+    contexts: {
+      security: {
+        event_type: eventType,
+        severity,
+        ...details
+      }
+    }
+  });
+  
+  // Add breadcrumb for security event
+  Sentry.addBreadcrumb({
+    category: 'security',
+    message: `Security event: ${eventType}`,
+    level: level as any,
+    data: details
+  });
+}
+
+// Helper to capture anomaly detection
+export function captureAnomaly(
+  anomalyType: string,
+  userId?: string,
+  details?: any
+) {
+  Sentry.captureMessage(`Anomaly Detected: ${anomalyType}`, {
+    level: 'warning',
+    tags: {
+      anomaly_type: anomalyType,
+      security_event: 'true'
+    },
+    contexts: {
+      anomaly: {
+        type: anomalyType,
+        user_id: userId,
+        ...details
+      }
+    }
+  });
+}
+
+// Helper to capture rate limit violations
+export function captureRateLimitViolation(
+  identifier: string,
+  endpoint: string,
+  requestCount: number,
+  maxRequests: number
+) {
+  Sentry.captureMessage('Rate Limit Violation', {
+    level: 'warning',
+    tags: {
+      security_event: 'true',
+      event_type: 'rate_limit_violation'
+    },
+    contexts: {
+      rate_limit: {
+        identifier,
+        endpoint,
+        request_count: requestCount,
+        max_requests: maxRequests,
+        exceeded_by: requestCount - maxRequests
+      }
+    }
+  });
+}
