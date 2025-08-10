@@ -122,14 +122,14 @@ export class TwoFactorController {
         return;
       }
 
-      // Verify password
-      const { data: user } = await supabase
-        .from('users')
-        .select('encrypted_password')
-        .eq('id', userId)
+      // Verify password - get from user_auth table
+      const { data: userAuth } = await supabase
+        .from('user_auth')
+        .select('password_hash')
+        .eq('user_id', userId)
         .single();
 
-      if (!user || !await bcrypt.compare(password, user.encrypted_password)) {
+      if (!userAuth || !await bcrypt.compare(password, userAuth.password_hash)) {
         await TwoFactorAuditService.logEnableAttempt(userId, req, false, 'Invalid password');
         res.status(400).json({ 
           success: false, 
@@ -453,14 +453,14 @@ export class TwoFactorController {
         return;
       }
 
-      // Verify password
-      const { data: user } = await supabase
-        .from('users')
-        .select('encrypted_password')
-        .eq('id', userId)
+      // Verify password - get from user_auth table
+      const { data: userAuth } = await supabase
+        .from('user_auth')
+        .select('password_hash')
+        .eq('user_id', userId)
         .single();
 
-      if (!user || !await bcrypt.compare(password, user.encrypted_password)) {
+      if (!userAuth || !await bcrypt.compare(password, userAuth.password_hash)) {
         res.status(400).json({ 
           success: false, 
           error: 'Invalid password' 
@@ -562,14 +562,14 @@ export class TwoFactorController {
         return;
       }
 
-      // Verify password
-      const { data: user } = await supabase
-        .from('users')
-        .select('encrypted_password')
-        .eq('id', userId)
+      // Verify password - get from user_auth table
+      const { data: userAuth } = await supabase
+        .from('user_auth')
+        .select('password_hash')
+        .eq('user_id', userId)
         .single();
 
-      if (!user || !await bcrypt.compare(password, user.encrypted_password)) {
+      if (!userAuth || !await bcrypt.compare(password, userAuth.password_hash)) {
         res.status(400).json({ 
           success: false, 
           error: 'Invalid password' 
