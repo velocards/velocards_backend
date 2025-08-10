@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CommonValidators, sanitizedString } from '../../validation/zod/common/validators';
 
 // US State codes
 const US_STATES = [
@@ -13,8 +14,6 @@ const US_STATES = [
 // Supported country codes
 const SUPPORTED_COUNTRIES = ['US'] as const; // Add more as Admediacards supports
 
-// Phone number regex for E.164 format
-const E164_PHONE_REGEX = /^\+[1-9]\d{1,14}$/;
 
 // Name validation regex (letters, spaces, hyphens, apostrophes)
 const NAME_REGEX = /^[a-zA-Z\s\-']+$/;
@@ -30,12 +29,10 @@ export const createCardSchema = z.object({
     programId: z.number()
       .int('Program ID must be an integer')
       .positive('Program ID must be positive'),
-    fundingAmount: z.number()
-      .positive('Funding amount must be positive')
+    fundingAmount: CommonValidators.monetaryAmount
       .min(10, 'Minimum funding amount is $10')
       .max(10000, 'Maximum funding amount is $10,000'),
-    spendingLimit: z.number()
-      .positive('Spending limit must be positive')
+    spendingLimit: CommonValidators.monetaryAmount
       .max(10000, 'Maximum spending limit is $10,000')
       .optional(),
     expiresIn: z.number()
@@ -45,29 +42,16 @@ export const createCardSchema = z.object({
       .optional(),
     
     // Cardholder Information - ALL REQUIRED
-    firstName: z.string()
-      .min(2, 'First name must be at least 2 characters')
-      .max(50, 'First name cannot exceed 50 characters')
-      .regex(NAME_REGEX, 'First name can only contain letters, spaces, hyphens, and apostrophes')
-      .trim(),
-    lastName: z.string()
-      .min(2, 'Last name must be at least 2 characters')
-      .max(50, 'Last name cannot exceed 50 characters')
-      .regex(NAME_REGEX, 'Last name can only contain letters, spaces, hyphens, and apostrophes')
-      .trim(),
-    phoneNumber: z.string()
-      .regex(E164_PHONE_REGEX, 'Phone number must be in international format (e.g., +1234567890)'),
+    firstName: sanitizedString(2, 50)
+      .refine(val => NAME_REGEX.test(val), 'First name can only contain letters, spaces, hyphens, and apostrophes'),
+    lastName: sanitizedString(2, 50)
+      .refine(val => NAME_REGEX.test(val), 'Last name can only contain letters, spaces, hyphens, and apostrophes'),
+    phoneNumber: CommonValidators.phoneNumber,
     
     // Billing Address - ALL REQUIRED
-    streetAddress: z.string()
-      .min(5, 'Street address must be at least 5 characters')
-      .max(255, 'Street address cannot exceed 255 characters')
-      .trim(),
-    city: z.string()
-      .min(2, 'City must be at least 2 characters')
-      .max(100, 'City cannot exceed 100 characters')
-      .regex(/^[a-zA-Z\s\-'.]+$/, 'City can only contain letters and common punctuation')
-      .trim(),
+    streetAddress: sanitizedString(5, 255),
+    city: sanitizedString(2, 100)
+      .refine(val => /^[a-zA-Z\s\-'.]+$/.test(val), 'City can only contain letters and common punctuation'),
     state: z.enum(US_STATES, {
       errorMap: () => ({ message: 'Please provide a valid 2-letter US state code' })
     }),

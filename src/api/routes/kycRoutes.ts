@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { KYCController } from '../controllers/kycController';
 import { authenticate } from '../middlewares/auth';
 import { authLimiter, defaultLimiter } from '../middlewares/rateLimiter';
+import { validate } from '../middlewares/validate';
+import { initiateKYCSchema, resetKYCSchema, kycWebhookSchema } from '../validators/kycValidators';
 
 const router = Router();
 
@@ -9,6 +11,7 @@ const router = Router();
 router.post(
   '/webhook',
   defaultLimiter,
+  validate(kycWebhookSchema),
   KYCController.processWebhook
 );
 
@@ -19,6 +22,7 @@ router.use(authenticate);
 router.post(
   '/initiate',
   authLimiter,
+  validate(initiateKYCSchema),
   KYCController.initiateKYC
 );
 
@@ -33,6 +37,7 @@ router.get(
 router.post(
   '/reset',
   authLimiter,
+  validate(resetKYCSchema),
   KYCController.resetKYC
 );
 

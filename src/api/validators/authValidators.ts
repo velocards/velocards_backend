@@ -1,19 +1,20 @@
 import { z } from 'zod';
+import { CommonValidators, sanitizedString } from '../../validation/zod/common/validators';
 
 export const registerSchema = z.object({
   body: z.object({
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    firstName: z.string().min(1, 'First name is required'),
-    lastName: z.string().min(1, 'Last name is required'),
-    phone: z.string().optional(),
+    email: CommonValidators.email,
+    password: CommonValidators.password,
+    firstName: sanitizedString(1, 50),
+    lastName: sanitizedString(1, 50),
+    phone: CommonValidators.phoneNumber.optional(),
     captchaToken: z.string().optional() // Optional to maintain backward compatibility
   })
 });
 
 export const loginSchema = z.object({
   body: z.object({
-    email: z.string().email('Invalid email address'),
+    email: CommonValidators.email,
     password: z.string().min(1, 'Password is required'),
     captchaToken: z.string().optional() // Optional to maintain backward compatibility
   })
@@ -27,7 +28,7 @@ export const refreshTokenSchema = z.object({
 
 export const forgotPasswordSchema = z.object({
   body: z.object({
-    email: z.string().email('Invalid email address'),
+    email: CommonValidators.email,
     captchaToken: z.string().optional() // Optional to maintain backward compatibility
   })
 });
@@ -35,7 +36,7 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z.object({
   body: z.object({
     token: z.string().min(1, 'Reset token is required'),
-    password: z.string().min(8, 'Password must be at least 8 characters')
+    password: CommonValidators.password
   })
 });
 
@@ -47,15 +48,21 @@ export const verifyEmailSchema = z.object({
 
 export const resendVerificationSchema = z.object({
   body: z.object({
-    email: z.string().email('Invalid email address')
+    email: CommonValidators.email
   })
 });
 
 export const changePasswordSchema = z.object({
   body: z.object({
     oldPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z.string().min(8, 'New password must be at least 8 characters')
-  })
+    newPassword: CommonValidators.password
+  }).refine(
+    (data) => data.oldPassword !== data.newPassword,
+    {
+      message: 'New password must be different from current password',
+      path: ['newPassword']
+    }
+  )
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>['body'];
