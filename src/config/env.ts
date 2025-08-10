@@ -58,10 +58,9 @@ export const env = cleanEnv(process.env, {
   KYC_API_KEY: str(),
   KYC_SECRET_KEY: str(),
 
-  // Email Service
-  SENDGRID_API_KEY: str(),
-  RESEND_API_KEY: str(),
-  BREVO_API_KEY: str({ default: '' }), // Optional - not in .env
+  // Email Service (Consolidated to Resend + SendGrid)
+  RESEND_API_KEY: str(), // Primary email provider
+  SENDGRID_API_KEY: str(), // Fallback email provider
   FROM_EMAIL: emailValidator(),
   FROM_NAME: str(),
   
