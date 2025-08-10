@@ -5,7 +5,8 @@ import { PasswordService } from './passwordService';
 import { TokenService } from './tokenService';
 import tierService from './tierService';
 import { SecurityLoggingService } from './securityLoggingService';
-import { TwoFactorRepository } from '../repositories/security/twoFactorRepository';
+// 2FA disabled - implementation incomplete
+// import { TwoFactorRepository } from '../repositories/security/twoFactorRepository';
 import { AuthenticationError, ConflictError, NotFoundError, ValidationError, AppError } from '../utils/errors';
 import { RegisterInput, LoginInput } from '../api/validators/authValidators';
 import { 
@@ -167,20 +168,20 @@ export class UserService {
         throw new AuthenticationError('Please verify your email before logging in');
       }
 
-      // Check if 2FA is enabled for this user
-      const twoFactorRepo = new TwoFactorRepository();
-      const twoFactorAuth = await twoFactorRepo.getTwoFactorAuth(user.id);
-      
-      if (twoFactorAuth?.isEnabled) {
-        // User has 2FA enabled - return a partial success requiring 2FA verification
-        logger.info(`User requires 2FA verification: ${user.email}`);
-        
-        return {
-          user: this.formatUserResponse(user),
-          requiresTwoFactor: true,
-          message: 'Two-factor authentication required'
-        };
-      }
+      // 2FA disabled - implementation incomplete
+      // const twoFactorRepo = new TwoFactorRepository();
+      // const twoFactorAuth = await twoFactorRepo.getTwoFactorAuth(user.id);
+      // 
+      // if (twoFactorAuth?.isEnabled) {
+      //   // User has 2FA enabled - return a partial success requiring 2FA verification
+      //   logger.info(`User requires 2FA verification: ${user.email}`);
+      //   
+      //   return {
+      //     user: this.formatUserResponse(user),
+      //     requiresTwoFactor: true,
+      //     message: 'Two-factor authentication required'
+      //   };
+      // }
 
       // Record successful login
       if (req) {

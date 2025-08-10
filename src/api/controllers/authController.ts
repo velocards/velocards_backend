@@ -97,15 +97,15 @@ export class AuthController {
 
       const result = await UserService.login(req.body, req);
       
-      // Check if 2FA is required
-      if (result.requiresTwoFactor) {
-        sendSuccess(res, {
-          user: result.user,
-          requiresTwoFactor: true,
-          message: result.message || 'Two-factor authentication required'
-        });
-        return;
-      }
+      // 2FA disabled - implementation incomplete
+      // if (result.requiresTwoFactor) {
+      //   sendSuccess(res, {
+      //     user: result.user,
+      //     requiresTwoFactor: true,
+      //     message: result.message || 'Two-factor authentication required'
+      //   });
+      //   return;
+      // }
 
       // Check if tokens exist before setting cookies
       if (result.tokens) {

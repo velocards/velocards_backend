@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import twoFactorRoutes from './auth/twoFactor';
+// 2FA disabled - implementation incomplete
+// import twoFactorRoutes from './auth/twoFactor';
 
 const router = Router();
 
-// Mount auth routes
-router.use('/auth/2fa', twoFactorRoutes);
+// 2FA routes disabled - implementation incomplete
+// router.use('/auth/2fa', twoFactorRoutes);
 
 export default router;
