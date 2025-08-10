@@ -1,6 +1,7 @@
 import supabase from '../config/database';
-import { DatabaseError } from '../utils/errors';
+import { DatabaseError } from '../types/errors';
 import { crypto as cryptoConfig } from '../config/env';
+// Removed unused import
 
 export interface XMoneyOrder {
   id: string;
@@ -15,7 +16,8 @@ export interface XMoneyOrder {
   return_url: string;
   cancel_url?: string;
   xmoney_order_id?: string;
-  metadata?: any;
+  expires_at?: string;
+  metadata?: Record<string, unknown>;
   created_at: string;
   updated_at?: string;
 }
@@ -36,7 +38,7 @@ export interface CryptoTransaction {
   confirmations?: number;
   status: 'pending' | 'confirming' | 'completed' | 'failed';
   fee_amount?: number;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   created_at: string;
   updated_at?: string;
 }
@@ -56,9 +58,9 @@ export interface DepositHistoryItem {
   currency: string;
   status: string;
   requestedAt: string;
-  lastUpdated?: string;
-  expiresAt?: string;
-  paymentUrl?: string;
+  lastUpdated?: string | undefined;
+  expiresAt?: string | undefined;
+  paymentUrl?: string | undefined;
   
   // Fee info
   feeInfo?: {
@@ -86,7 +88,7 @@ export interface DepositHistoryItem {
   } | null;
   
   // Metadata
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export class CryptoRepository {
@@ -101,8 +103,8 @@ export class CryptoRepository {
 
       if (error) throw error;
       return data;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to create crypto order', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to create crypto order', undefined, error);
     }
   }
 
@@ -116,8 +118,8 @@ export class CryptoRepository {
 
       if (error && error.code !== 'PGRST116') throw error;
       return data;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to get order', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to get order', undefined, error);
     }
   }
 
@@ -131,8 +133,8 @@ export class CryptoRepository {
 
       if (error && error.code !== 'PGRST116') throw error;
       return data;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to get order by reference', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to get order by reference', undefined, error);
     }
   }
 
@@ -150,8 +152,8 @@ export class CryptoRepository {
 
       if (error) throw error;
       return data;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to update order', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to update order', undefined, error);
     }
   }
 
@@ -190,8 +192,8 @@ export class CryptoRepository {
         orders: data || [],
         total: count || 0
       };
-    } catch (error: any) {
-      throw new DatabaseError('Failed to get user orders', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to get user orders', undefined, error);
     }
   }
 
@@ -207,8 +209,8 @@ export class CryptoRepository {
 
       if (error) throw error;
       return data || [];
-    } catch (error: any) {
-      throw new DatabaseError('Failed to find expired xmoney orders', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to find expired xmoney orders', undefined, error);
     }
   }
 
@@ -224,8 +226,8 @@ export class CryptoRepository {
         .eq('id', orderId);
 
       if (error) throw error;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to mark order as expired', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to mark order as expired', undefined, error);
     }
   }
 
@@ -240,8 +242,8 @@ export class CryptoRepository {
 
       if (error) throw error;
       return data;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to create crypto transaction', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to create crypto transaction', undefined, error);
     }
   }
 
@@ -255,8 +257,8 @@ export class CryptoRepository {
 
       if (error && error.code !== 'PGRST116') throw error;
       return data;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to get transaction', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to get transaction', undefined, error);
     }
   }
 
@@ -270,8 +272,8 @@ export class CryptoRepository {
 
       if (error) throw error;
       return data || [];
-    } catch (error: any) {
-      throw new DatabaseError('Failed to get transactions by order', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to get transactions by order', undefined, error);
     }
   }
 
@@ -288,8 +290,8 @@ export class CryptoRepository {
 
       const total = data?.reduce((sum, order) => sum + (parseFloat(order.amount) || 0), 0) || 0;
       return total;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to get pending deposits total', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to get pending deposits total', undefined, error);
     }
   }
 
@@ -310,8 +312,8 @@ export class CryptoRepository {
 
       if (error) throw error;
       return data;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to update transaction', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to update transaction', undefined, error);
     }
   }
 
@@ -361,8 +363,8 @@ export class CryptoRepository {
         transactions: data || [],
         total: count || 0
       };
-    } catch (error: any) {
-      throw new DatabaseError('Failed to get deposit history', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to get deposit history', undefined, error);
     }
   }
 
@@ -377,8 +379,8 @@ export class CryptoRepository {
         }]);
 
       if (error) throw error;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to save exchange rate', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to save exchange rate', undefined, error);
     }
   }
 
@@ -404,8 +406,8 @@ export class CryptoRepository {
       }
 
       return data;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to get exchange rate', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to get exchange rate', undefined, error);
     }
   }
 
@@ -428,12 +430,21 @@ export class CryptoRepository {
         }]);
 
       if (error) throw error;
-    } catch (error: any) {
-      throw new DatabaseError('Failed to save withdrawal address', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to save withdrawal address', undefined, error);
     }
   }
 
-  static async getUserWithdrawalAddresses(userId: string): Promise<any[]> {
+  static async getUserWithdrawalAddresses(userId: string): Promise<Array<{
+    id: string;
+    user_id: string;
+    address: string;
+    currency: string;
+    label?: string;
+    is_verified: boolean;
+    is_active: boolean;
+    created_at: string;
+  }>> {
     try {
       const { data, error } = await supabase
         .from('withdrawal_addresses')
@@ -444,8 +455,8 @@ export class CryptoRepository {
 
       if (error) throw error;
       return data || [];
-    } catch (error: any) {
-      throw new DatabaseError('Failed to get withdrawal addresses', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to get withdrawal addresses', undefined, error);
     }
   }
 
@@ -515,11 +526,11 @@ export class CryptoRepository {
       if (error) throw error;
 
       // Transform data to unified format
-      const deposits: DepositHistoryItem[] = (data || []).map((order: any) => {
+      const deposits: DepositHistoryItem[] = (data || []).map((order: XMoneyOrder & { crypto_transactions?: CryptoTransaction[] }) => {
         const transaction = order.crypto_transactions?.[0];
         
         // Get explorer URLs from transaction metadata or order metadata
-        const explorerUrls = transaction?.metadata?.explorer_urls || order.metadata?.explorer_urls || null;
+        const explorerUrls = transaction?.metadata?.['explorer_urls'] || order.metadata?.['explorer_urls'] || null;
         
         return {
           // Order info (always present)
@@ -527,18 +538,18 @@ export class CryptoRepository {
           orderReference: order.order_reference,
           amount: order.amount,
           currency: order.currency,
-          status: this.getDisplayStatus(order, transaction),
+          status: this.getDisplayStatus(order, transaction || null),
           requestedAt: order.created_at,
-          lastUpdated: order.updated_at,
+          lastUpdated: order.updated_at || undefined,
           expiresAt: order.expires_at,
           paymentUrl: order.redirect_url,
           
           // Fee info from order metadata
-          feeInfo: order.metadata?.fee_amount ? {
-            grossAmount: order.metadata.gross_amount || order.amount,
-            feeAmount: order.metadata.fee_amount || 0,
-            netAmount: order.metadata.net_amount || order.amount,
-            feePercentage: order.metadata.fee_percentage || 0
+          feeInfo: order.metadata?.['fee_amount'] ? {
+            grossAmount: (order.metadata['gross_amount'] as number) || order.amount,
+            feeAmount: (order.metadata['fee_amount'] as number) || 0,
+            netAmount: (order.metadata['net_amount'] as number) || order.amount,
+            feePercentage: (order.metadata['fee_percentage'] as number) || 0
           } : null,
           
           // Transaction info (only if completed)
@@ -549,7 +560,7 @@ export class CryptoRepository {
           transactionFeeAmount: transaction?.fee_amount || null,
           creditedAmount: transaction?.fiat_amount || null,
           completedAt: transaction?.created_at || null,
-          transactionHash: transaction?.transaction_hash || order.metadata?.transaction_hash || null,
+          transactionHash: transaction?.transaction_hash || (order.metadata?.['transaction_hash'] as string) || null,
           confirmations: transaction?.confirmations || null,
           
           // Explorer URLs
@@ -564,15 +575,18 @@ export class CryptoRepository {
         deposits,
         total: count || 0
       };
-    } catch (error: any) {
-      throw new DatabaseError('Failed to get complete deposit history', error);
+    } catch (error) {
+      throw new DatabaseError('Failed to get complete deposit history', undefined, error);
     }
   }
 
   /**
    * Helper method to determine display status
    */
-  private static getDisplayStatus(order: any, transaction: any): string {
+  private static getDisplayStatus(
+    order: XMoneyOrder,
+    transaction: CryptoTransaction | null
+  ): string {
     // If we have a completed transaction, show as completed
     if (transaction && transaction.status === 'completed') {
       return 'completed';

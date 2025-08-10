@@ -1,5 +1,5 @@
 import { supabase } from '../../config/database';
-import { TwoFactorAuthData, UserSession, SessionCreateData } from '../../types/security';
+import { TwoFactorAuthData, UserSession, SessionCreateData, DeviceTrustStatus } from '../../types/security';
 import { TwoFactorService } from '../../services/security/twoFactorService';
 import { SessionManager } from '../../services/security/sessionManager';
 
@@ -126,7 +126,7 @@ export class TwoFactorRepository {
           user_id: sessionData.userId,
           refresh_token_hash: this.sessionManager.hashRefreshToken(sessionData.refreshToken),
           device_fingerprint: sessionData.deviceFingerprint || null,
-          ip_address: sessionData.ipAddress || null,
+          ip_address: sessionData.location?.ipAddress || null,
           user_agent: sessionData.userAgent || null,
           two_fa_verified: sessionData.twoFaVerified || false,
           expires_at: this.sessionManager.calculateSessionExpiry()
@@ -288,11 +288,14 @@ export class TwoFactorRepository {
     return {
       id: data.id,
       userId: data.user_id,
+      method: data.method || 'totp', // Default to TOTP
       secret: data.secret,
       backupCodes: data.backup_codes,
       isEnabled: data.is_enabled,
       lastUsed: data.last_used ? new Date(data.last_used) : null,
       setupInitiatedAt: data.setup_initiated_at ? new Date(data.setup_initiated_at) : null,
+      verificationAttempts: data.verification_attempts || 0,
+      lastFailedAttempt: data.last_failed_attempt ? new Date(data.last_failed_attempt) : null,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at)
     };
@@ -304,9 +307,16 @@ export class TwoFactorRepository {
       userId: data.user_id,
       refreshTokenHash: data.refresh_token_hash,
       deviceFingerprint: data.device_fingerprint,
-      ipAddress: data.ip_address,
+      deviceInfo: null, // Could be populated from parsed user_agent
+      location: {
+        ipAddress: data.ip_address,
+        ...(data.country !== undefined && { country: data.country }),
+        ...(data.city !== undefined && { city: data.city }),
+        ...(data.timezone !== undefined && { timezone: data.timezone })
+      },
       userAgent: data.user_agent,
       isActive: data.is_active,
+      trustLevel: (data.trust_level as DeviceTrustStatus) || 'untrusted',
       twoFaVerified: data.two_fa_verified,
       lastActivity: new Date(data.last_activity),
       expiresAt: new Date(data.expires_at),

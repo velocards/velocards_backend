@@ -1,32 +1,13 @@
 import { Response } from 'express';
+import { 
+  ApiSuccessResponse, 
+  ApiErrorResponse, 
+  ErrorDetails 
+} from '@/types/apiResponses';
 
-interface SuccessResponse<T = any> {
-  success: true;
-  data: T;
-  meta?: {
-    timestamp: string;
-    requestId?: string;
-    pagination?: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
-  };
-}
-
-interface ErrorResponse {
-  success: false;
-  error: {
-    code: string;
-    message: string;
-    details?: any;
-  };
-  meta: {
-    timestamp: string;
-    requestId?: string;
-  };
-}
+// Re-export types for backward compatibility
+type SuccessResponse<T = unknown> = ApiSuccessResponse<T>;
+type ErrorResponse = ApiErrorResponse;
 
 export function sendSuccess<T>(
   res: Response,
@@ -62,18 +43,19 @@ export function sendError(
   code: string,
   message: string,
   statusCode: number = 400,
-  details?: any
+  details?: ErrorDetails
 ): Response {
+  const requestId = (res.req as Express.Request & { id?: string }).id;
   const response: ErrorResponse = {
     success: false,
     error: {
       code,
       message,
-      details
+      ...(details !== undefined && { details })
     },
     meta: {
       timestamp: new Date().toISOString(),
-      requestId: (res.req as any).id
+      ...(requestId !== undefined && { requestId })
     }
   };
   
@@ -118,14 +100,14 @@ export function formatSuccessResponse<T>(
 export function formatErrorResponse(
   code: string,
   message: string,
-  details?: any
+  details?: ErrorDetails
 ): ErrorResponse {
   return {
     success: false,
     error: {
       code,
       message,
-      details
+      ...(details !== undefined && { details })
     },
     meta: {
       timestamp: new Date().toISOString()

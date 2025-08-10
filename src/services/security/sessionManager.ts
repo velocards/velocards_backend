@@ -65,7 +65,7 @@ export class SessionManager {
     if (previousSessions.length === 0) return false;
 
     // Check for rapid location changes (different IP ranges)
-    if (currentSession.ipAddress) {
+    if (currentSession.location?.ipAddress) {
       const recentSessions = previousSessions
         .filter(s => {
           const timeDiff = Date.now() - new Date(s.createdAt).getTime();
@@ -73,8 +73,8 @@ export class SessionManager {
         });
 
       for (const session of recentSessions) {
-        if (session.ipAddress && 
-            this.isDifferentIpRange(currentSession.ipAddress, session.ipAddress)) {
+        if (session.location?.ipAddress && currentSession.location?.ipAddress &&
+            this.isDifferentIpRange(currentSession.location.ipAddress, session.location.ipAddress)) {
           return true; // Suspicious: Different IP range within short time
         }
       }
@@ -120,7 +120,7 @@ export class SessionManager {
     return {
       id: session.id,
       deviceInfo: this.parseUserAgent(session.userAgent),
-      ipAddress: session.ipAddress,
+      ipAddress: session.location?.ipAddress || null,
       lastActivity: session.lastActivity,
       twoFaVerified: session.twoFaVerified,
       createdAt: session.createdAt

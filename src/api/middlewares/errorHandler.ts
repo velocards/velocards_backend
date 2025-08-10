@@ -43,11 +43,19 @@ import { Request, Response, NextFunction } from 'express';
 
     // Handle JSON parse errors
     if (err instanceof SyntaxError && 'body' in err) {
+      const jsonError = err as SyntaxError & { status?: number; body?: string };
+      logger.warn('JSON parse error', {
+        message: err.message,
+        body: jsonError.body?.substring(0, 200), // Log first 200 chars for debugging
+        endpoint: req.url,
+        method: req.method
+      });
+      
       res.status(400).json({
         success: false,
         error: {
           code: 'INVALID_JSON',
-          message: 'Invalid JSON in request body'
+          message: 'Invalid JSON in request body. Please check for proper formatting and escape sequences.'
         },
         meta: {
           timestamp: new Date().toISOString(),

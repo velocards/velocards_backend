@@ -128,10 +128,17 @@ export class TwoFactorService {
     const backupCodes = this.generateBackupCodes();
 
     return {
+      method: 'totp' as const,
       secret,
       qrCode,
-      backupCodes
+      backupCodes,
+      setupToken: this.generateSetupToken()
     };
+  }
+
+  private generateSetupToken(): string {
+    const crypto = require('crypto');
+    return crypto.randomBytes(32).toString('hex');
   }
 
   verifyBackupCode(inputCode: string, storedCodes: string[]): { valid: boolean; remainingCodes?: string[] } {

@@ -15,6 +15,7 @@ import dotenv from 'dotenv';
   import { testDatabaseConnection } from './config/database';
   import { requestId } from './api/middlewares/requestId';
   import { errorHandler } from './api/middlewares/errorHandler';
+  import { jsonErrorHandler } from './api/middlewares/jsonErrorHandler';
   import { sentryRequestHandler, sentryErrorHandler } from './api/middlewares/sentryMiddleware';
   import { globalLimiter } from './api/middlewares/rateLimiter';
   import { csrfProtection } from './api/middlewares/csrf';
@@ -137,8 +138,17 @@ import dotenv from 'dotenv';
     exposedHeaders: ['X-Request-ID']
   }));
   app.use(compression());
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({
+    limit: '10mb',
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf.toString();
+    }
+  }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  
+  // JSON error handler must come after body parsers
+  app.use(jsonErrorHandler);
+  
   app.use(cookieParser());
   app.use(morgan('combined'));
   

@@ -362,10 +362,10 @@ export class CryptoService {
       }
 
       // If we have an xMoney order ID, fetch latest status from xMoney
-      if (order.metadata?.xmoney_order_id) {
+      if (order.metadata?.['xmoney_order_id']) {
         try {
           const xmoneyClient = getXMoneyClient();
-          const xmoneyOrder = await xmoneyClient.getOrder(order.metadata.xmoney_order_id, true);
+          const xmoneyOrder = await xmoneyClient.getOrder(order.metadata['xmoney_order_id'] as string, true);
           
           // Update our order status if it changed
           if (xmoneyOrder.data.attributes.status !== order.status) {
@@ -384,13 +384,13 @@ export class CryptoService {
 
           logger.debug('xMoney order status updated', {
             orderId,
-            xmoneyOrderId: order.metadata.xmoney_order_id,
+            xmoneyOrderId: order.metadata['xmoney_order_id'],
             status: xmoneyOrder.data.attributes.status
           });
         } catch (xmoneyError) {
           logger.warn('Failed to fetch xMoney order status', { 
             orderId,
-            xmoneyOrderId: order.metadata?.xmoney_order_id,
+            xmoneyOrderId: order.metadata?.['xmoney_order_id'],
             error: xmoneyError
           });
           // Continue with local order data
@@ -554,11 +554,11 @@ export class CryptoService {
     });
 
     // Get fee information from order metadata
-    const feeInfo = order.metadata?.fee_amount ? {
-      grossAmount: order.metadata.gross_amount || order.amount,
-      feeAmount: order.metadata.fee_amount || 0,
-      netAmount: order.metadata.net_amount || order.amount,
-      feePercentage: order.metadata.fee_percentage || 0
+    const feeInfo = order.metadata?.['fee_amount'] ? {
+      grossAmount: (order.metadata['gross_amount'] as number) || order.amount,
+      feeAmount: (order.metadata['fee_amount'] as number) || 0,
+      netAmount: (order.metadata['net_amount'] as number) || order.amount,
+      feePercentage: (order.metadata['fee_percentage'] as number) || 0
     } : await pricingService.applyDepositFee(order.user_id, order.amount);
 
     // Create crypto transaction record with transaction hash and explorer URLs
