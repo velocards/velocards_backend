@@ -56,11 +56,11 @@ export class TwoFactorController {
       const setupData = await this.twoFactorService.setupTwoFactor(email);
 
       // Store temporary 2FA data (not enabled yet)
-      // Encrypt the secret before storing
-      const encryptedSecret = this.twoFactorService.encryptSecret(setupData.secret);
-      const encryptedBackupCodes = this.twoFactorService.encryptBackupCodes(setupData.backupCodes);
-      
       if (existing2FA) {
+        // For update, we need to encrypt the values ourselves since updateTwoFactorAuth expects encrypted values
+        const encryptedSecret = this.twoFactorService.encryptSecret(setupData.secret);
+        const encryptedBackupCodes = this.twoFactorService.encryptBackupCodes(setupData.backupCodes);
+        
         await this.twoFactorRepository.updateTwoFactorAuth(userId, {
           secret: encryptedSecret,
           backupCodes: encryptedBackupCodes,
@@ -68,10 +68,11 @@ export class TwoFactorController {
           setupInitiatedAt: new Date()  // Track when setup was initiated
         });
       } else {
+        // For create, pass plain values as the method encrypts them internally
         await this.twoFactorRepository.createTwoFactorAuth(
           userId,
-          encryptedSecret,
-          encryptedBackupCodes
+          setupData.secret,  // Pass plain secret
+          setupData.backupCodes  // Pass plain backup codes
         );
       }
 

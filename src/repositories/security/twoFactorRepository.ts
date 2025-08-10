@@ -23,7 +23,8 @@ export class TwoFactorRepository {
           user_id: userId,
           secret: encryptedSecret,
           backup_codes: encryptedBackupCodes,
-          is_enabled: false
+          is_enabled: false,
+          setup_initiated_at: new Date()  // Track when setup was initiated
         })
         .select()
         .single();
@@ -69,7 +70,8 @@ export class TwoFactorRepository {
       }
 
       if (updates.secret !== undefined) {
-        updateData.secret = this.twoFactorService.encryptSecret(updates.secret);
+        // Secret should already be encrypted when passed to this method
+        updateData.secret = updates.secret;
       }
 
       if (updates.setupInitiatedAt !== undefined) {
