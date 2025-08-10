@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/index.ts",
+    "prebuild": "test -d ../shared || git clone https://$GITHUB_TOKEN@github.com/velocards/velocards_shared.git ../shared && cd ../shared && npm install && npm run build && cd -",
     "build": "npm run swagger && tsc && npm run copy-swagger",
     "copy-swagger": "mkdir -p dist/src/swagger && cp src/swagger/swagger.json dist/src/swagger/swagger.json || true",
     "start": "node dist/src/index.js",
