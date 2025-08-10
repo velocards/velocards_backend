@@ -72,6 +72,10 @@ export class TwoFactorRepository {
         updateData.secret = this.twoFactorService.encryptSecret(updates.secret);
       }
 
+      if (updates.setupInitiatedAt !== undefined) {
+        updateData.setup_initiated_at = updates.setupInitiatedAt;
+      }
+
       const { error } = await supabase
         .from('two_factor_auth')
         .update(updateData)
@@ -286,6 +290,7 @@ export class TwoFactorRepository {
       backupCodes: data.backup_codes,
       isEnabled: data.is_enabled,
       lastUsed: data.last_used ? new Date(data.last_used) : null,
+      setupInitiatedAt: data.setup_initiated_at ? new Date(data.setup_initiated_at) : null,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at)
     };
