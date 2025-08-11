@@ -52,7 +52,7 @@ export type TransactionFilters = z.infer<typeof TransactionFiltersSchema>
 // Pagination options schema
 export const PaginationOptionsSchema = z.object({
   page: z.number().int().positive().default(1),
-  limit: z.number().int().positive().max(100).default(20),
+  limit: z.number().int().positive().max(1000).default(20), // Increased max to 1000
   orderBy: z.enum(['created_at', 'amount']).optional(),
   orderDirection: z.enum(['asc', 'desc']).optional()
 })

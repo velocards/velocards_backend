@@ -120,16 +120,16 @@ export abstract class BaseRepository<T extends BaseEntity>
     if (isUpdate) {
       return {
         ...data,
-        updatedAt: now,
-        updatedBy: userId
+        updated_at: now,
+        updated_by: userId
       }
     }
     return {
       ...data,
-      createdAt: now,
-      updatedAt: now,
-      createdBy: userId,
-      updatedBy: userId
+      created_at: now,
+      updated_at: now,
+      created_by: userId,
+      updated_by: userId
     }
   }
 
@@ -176,7 +176,7 @@ export abstract class BaseRepository<T extends BaseEntity>
           .eq('id', id)
 
         if (this.isSoftDeletable()) {
-          query.is('deletedAt', null)
+          query.is('deleted_at', null)
         }
 
         const { data, error } = await query.single()
@@ -201,7 +201,7 @@ export abstract class BaseRepository<T extends BaseEntity>
         let query = this.supabase.from(this.tableName).select('*')
 
         if (this.isSoftDeletable()) {
-          query = query.is('deletedAt', null)
+          query = query.is('deleted_at', null)
         }
 
         if (filters) {
@@ -273,8 +273,8 @@ export abstract class BaseRepository<T extends BaseEntity>
       try {
         if (this.isSoftDeletable()) {
           const deleteData = {
-            deletedAt: new Date(),
-            deletedBy: userId
+            deleted_at: new Date(),
+            deleted_by: userId
           }
 
           this.logAudit('SOFT_DELETE', id, deleteData, userId)
@@ -340,7 +340,7 @@ export abstract class BaseRepository<T extends BaseEntity>
         let query = this.supabase.from(this.tableName).select(selectFields)
 
         if (this.isSoftDeletable()) {
-          query = query.is('deletedAt', null)
+          query = query.is('deleted_at', null)
         }
 
         if (options.where) {
@@ -384,7 +384,7 @@ export abstract class BaseRepository<T extends BaseEntity>
           .select('*', { count: 'exact', head: true })
 
         if (this.isSoftDeletable()) {
-          query = query.is('deletedAt', null)
+          query = query.is('deleted_at', null)
         }
 
         if (where) {
@@ -412,7 +412,7 @@ export abstract class BaseRepository<T extends BaseEntity>
         let query = this.supabase.from(this.tableName).select('*')
 
         if (this.isSoftDeletable()) {
-          query = query.is('deletedAt', null)
+          query = query.is('deleted_at', null)
         }
 
         Object.entries(where).forEach(([key, value]) => {
@@ -443,7 +443,7 @@ export abstract class BaseRepository<T extends BaseEntity>
         let query = this.supabase.from(this.tableName).select('*')
 
         if (this.isSoftDeletable()) {
-          query = query.is('deletedAt', null)
+          query = query.is('deleted_at', null)
         }
 
         Object.entries(where).forEach(([key, value]) => {
