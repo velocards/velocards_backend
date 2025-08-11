@@ -432,7 +432,7 @@ export class CardService {
         expiryYear: fullCardDetails.ExpYear,
         holderName: `${card.metadata?.['firstName'] || ''} ${card.metadata?.['lastName'] || ''}`.trim(),
         status: card.status,
-        spendingLimit: card.spending_limit || 0,
+        spendingLimit: card.spending_limit || card.limit_amount || 0,
         spentAmount: card.spent_amount || 0,
         remainingBalance: card.remaining_balance || 0,
         createdAt: card.created_at
@@ -617,8 +617,8 @@ export class CardService {
       throw new ValidationError('New limit cannot be less than already spent amount');
     }
 
-    // Calculate the difference
-    const limitDifference = newLimit - card.spending_limit;
+    // Calculate the difference (spending_limit should always be set from our mapping)
+    const limitDifference = newLimit - (card.spending_limit || card.limit_amount || 0);
     
     if (limitDifference > 0) {
       // Increasing limit - check user balance
@@ -660,14 +660,14 @@ export class CardService {
         ...card.metadata,
         limit_updated_at: new Date().toISOString(),
         limit_updated_by: userId,
-        previous_limit: card.spending_limit
+        previous_limit: card.spending_limit || card.limit_amount || 0
       }
     });
 
     logger.info('Card limit updated', {
       userId,
       cardId,
-      oldLimit: card.spending_limit,
+      oldLimit: card.spending_limit || card.limit_amount || 0,
       newLimit
     });
 
@@ -743,7 +743,7 @@ export class CardService {
       maskedPan: card.masked_pan,
       type: card.card_type,
       status: card.status,
-      spendingLimit: card.spending_limit,
+      spendingLimit: card.spending_limit || card.limit_amount || 0,
       spentAmount: card.spent_amount,
       remainingBalance: card.remaining_balance,
       currency: card.currency,
