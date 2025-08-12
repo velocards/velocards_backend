@@ -40,14 +40,17 @@
     }
   },
   "include": [
-    "src/**/*",
-    "tests/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "**/*.type-test.ts",
+    "src/__tests__/**/*",
+    "__tests__/**/*",
+    "tests/**/*"
   ],
   "ts-node": {
     "require": ["tsconfig-paths/register"]
