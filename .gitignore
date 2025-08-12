@@ -47,6 +47,9 @@ backups-archive/
 # Testing
 coverage/
 .nyc_output/
+jest.setup.js
+src/__mocks__/
+**/__mocks__/
 
 # Temporary files
 .tmp/

@@ -2,7 +2,7 @@ import { Worker, Job } from 'bullmq';
 import { QUEUE_NAMES } from '../../config/queue';
 import { createRedisConnection } from '../../config/redis';
 import { UserRepository } from '../../repositories/userRepository';
-import { UserBalanceLedgerRepository } from '../../repositories/userBalanceLedgerRepository';
+import { UserBalanceLedgerRepository } from '../../repositories/UserBalanceLedgerRepository';
 import { CryptoTransactionRepository } from '../../repositories/cryptoTransactionRepository';
 import logger from '../../utils/logger';
 

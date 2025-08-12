@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { AuditLogRepository } from '../../../repositories/security/auditLogRepository';
+import { AuditLogRepository } from '../../../repositories/security/AuditLogRepository';
 import { RateLimitService } from '../../../services/security/rateLimitService';
 import { AnomalyDetectionService } from '../../../services/security/anomalyDetectionService';
 import { LoggerService } from '../../../services/logging/loggerService';

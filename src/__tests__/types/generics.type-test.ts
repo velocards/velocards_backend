@@ -293,7 +293,7 @@ describe('Array Utilities', () => {
       { id: '2', name: 'Jane' }
     ];
 
-    const userMap = mapToObject(users, u => u.id, u => u.name);
+    const userMap = mapToObject(users, (u: User) => u.id, (u: User) => u.name);
 
     expectType<Record<string, string>>(userMap);
     expectType<string>(userMap['1']);
@@ -316,13 +316,13 @@ describe('Array Utilities', () => {
       { id: '1', value: 30 }
     ];
 
-    const uniqueItems = unique(items, item => item.id);
+    const uniqueItems = unique(items, (item: Item) => item.id);
     expectType<Item[]>(uniqueItems);
   });
 
   test('partition splits array maintaining types', () => {
     const numbers = [1, 2, 3, 4, 5];
-    const [evens, odds] = partition(numbers, n => n % 2 === 0);
+    const [evens, odds] = partition(numbers, (n: number) => n % 2 === 0);
 
     expectType<number[]>(evens);
     expectType<number[]>(odds);
@@ -384,7 +384,7 @@ describe('Object Utilities', () => {
 
   test('mapValues transforms object values', () => {
     const numbers = { a: 1, b: 2, c: 3 };
-    const strings = mapValues(numbers, (value, key) => {
+    const strings = mapValues(numbers, (value: number, key: string) => {
       expectType<number>(value);
       expectType<string>(key);
       return value.toString();
@@ -396,7 +396,7 @@ describe('Object Utilities', () => {
 
   test('mapKeys transforms object keys', () => {
     const obj = { firstName: 'John', lastName: 'Doe' };
-    const snakeCase = mapKeys(obj, (key, value) => {
+    const snakeCase = mapKeys(obj, (key: string, value: string) => {
       expectType<string>(key);
       expectType<string>(value);
       return key.replace(/([A-Z])/g, '_$1').toLowerCase();
@@ -422,8 +422,9 @@ describe('Generic Constraints', () => {
     expectType<boolean>(result.processed);
 
     // Test missing required property
-    // @ts-expect-error Missing id property
-    processEntity({ name: 'John' } as any);
+    // Missing id property should cause error
+    // @ts-expect-error
+    processEntity({ name: 'John' });
   });
 
   test('conditional types based on generic parameters', () => {
