@@ -44,6 +44,7 @@ import dotenv from 'dotenv';
   import bullDashboard from './api/routes/bullDashboard';
   import docsRoutes from './api/routes/docsRoutes';
   import v2Routes from './api/routes/v2';
+import healthRoutes from './api/routes/healthRoutes';
 
   // Import job workers
   import { startJobWorkers, stopJobWorkers } from './jobs';
@@ -167,6 +168,9 @@ import dotenv from 'dotenv';
       database: dbConnected ? 'connected' : 'disconnected'
     });
   });
+
+  // Health and monitoring routes
+  app.use('/api/health', healthRoutes);
 
   // API Routes
   app.use('/api/v1/auth', authRoutes);
