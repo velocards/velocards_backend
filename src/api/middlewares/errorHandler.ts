@@ -3,15 +3,11 @@ import { AppError } from '../../utils/errors';
 import logger from '../../utils/logger';
 import { env } from '../../config/env';
 import { 
-  ErrorCode, 
-  ErrorMessages, 
-  ErrorStatusCodes,
-  getErrorMessage,
-  getErrorStatusCode 
+  ErrorCode,
+  getErrorMessage
 } from '../../constants/errorCodes';
 import { createErrorResponse } from './responseWrapper';
 import { ZodError } from 'zod';
-import { ValidationError } from 'joi';
 
 /**
  * Centralized error handler middleware
@@ -90,10 +86,11 @@ export function errorHandler(
     return;
   }
 
-  // Handle Joi validation errors
-  if (err instanceof ValidationError) {
-    const details = err.details.map(detail => ({
-      path: detail.path.join('.'),
+  // Handle Joi validation errors (if Joi is still used)
+  if (err.name === 'ValidationError' && 'details' in err) {
+    const joiError = err as any;
+    const details = joiError.details?.map((detail: any) => ({
+      path: detail.path?.join('.'),
       message: detail.message
     }));
     

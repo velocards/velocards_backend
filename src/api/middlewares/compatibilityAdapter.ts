@@ -49,7 +49,7 @@ export function responseAdapter(req: Request, res: Response, next: NextFunction)
  * Request adapter middleware
  * Transforms v1 requests to v2 format for new handlers
  */
-export function requestAdapter(req: Request, res: Response, next: NextFunction): void {
+export function requestAdapter(req: Request, _res: Response, next: NextFunction): void {
   const versionedReq = req as VersionedRequest;
   
   // Only apply adapter for v1 requests to v2 handlers
@@ -104,7 +104,7 @@ function transformV2ToV1Response(data: any): any {
 /**
  * Transform v1 request to v2 format
  */
-function transformV1ToV2Request(body: any, path: string): any {
+function transformV1ToV2Request(body: any, _path: string): any {
   // Handle pagination transformation
   if (body.page !== undefined || body.limit !== undefined) {
     return {
@@ -150,7 +150,7 @@ function transformV1ToV2Query(query: any): any {
  * Migration helper middleware
  * Logs usage patterns to help with migration planning
  */
-export function migrationMonitor(req: Request, res: Response, next: NextFunction): void {
+export function migrationMonitor(req: Request, _res: Response, next: NextFunction): void {
   const versionedReq = req as VersionedRequest;
   
   if (versionedReq.apiVersion === 'v1') {

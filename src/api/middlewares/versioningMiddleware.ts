@@ -48,7 +48,7 @@ export const SUPPORTED_VERSIONS = Object.keys(API_VERSIONS);
 export function extractApiVersion(req: Request): string {
   // Check URL path for version
   const pathMatch = req.path.match(/^\/api\/(v\d+)\//);
-  if (pathMatch) {
+  if (pathMatch && pathMatch[1]) {
     return pathMatch[1];
   }
   
@@ -56,7 +56,7 @@ export function extractApiVersion(req: Request): string {
   const acceptHeader = req.headers.accept;
   if (acceptHeader) {
     const versionMatch = acceptHeader.match(/application\/vnd\.velocards\.(v\d+)\+json/);
-    if (versionMatch) {
+    if (versionMatch && versionMatch[1]) {
       return versionMatch[1];
     }
   }
@@ -68,7 +68,7 @@ export function extractApiVersion(req: Request): string {
   }
   
   // Check query parameter for version
-  const versionQuery = req.query.apiVersion || req.query.version;
+  const versionQuery = req.query['apiVersion'] || req.query['version'];
   if (versionQuery && typeof versionQuery === 'string') {
     return versionQuery;
   }
@@ -112,7 +112,7 @@ export function versioningMiddleware(req: Request, res: Response, next: NextFunc
     // Add deprecation headers
     res.setHeader('X-API-Deprecated', 'true');
     if (versionConfig.sunsetDate) {
-      res.setHeader('X-API-Sunset-Date', versionConfig.sunsetDate.toString());
+      res.setHeader('X-API-Sunset-Date', String(versionConfig.sunsetDate));
     }
     res.setHeader('X-API-Deprecation-Info', 
       `Please migrate to a newer API version. See documentation for migration guide.`
@@ -142,7 +142,7 @@ export function versionRoute(versions: { [key: string]: any }) {
     const versionedReq = req as VersionedRequest;
     const version = versionedReq.apiVersion || DEFAULT_VERSION;
     
-    const handler = versions[version] || versions.default;
+    const handler = versions[version] || versions['default'];
     
     if (!handler) {
       res.status(501).json({
@@ -200,12 +200,12 @@ export function createVersionedRouter(express: any) {
   const v2Router = express.Router();
   
   // Apply version-specific middleware
-  v1Router.use((req: Request, res: Response, next: NextFunction) => {
+  v1Router.use((req: Request, _res: Response, next: NextFunction) => {
     (req as VersionedRequest).apiVersion = 'v1';
     next();
   });
   
-  v2Router.use((req: Request, res: Response, next: NextFunction) => {
+  v2Router.use((req: Request, _res: Response, next: NextFunction) => {
     (req as VersionedRequest).apiVersion = 'v2';
     next();
   });

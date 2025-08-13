@@ -57,12 +57,21 @@ export function parseCursorPaginationParams(req: ExtendedRequest): void {
   const { first, after, last, before } = req.query;
   const cursorPagination = req.body as CursorPaginationRequest;
   
-  req.cursorPagination = {
-    first: cursorPagination?.first || (first ? parseInt(first as string, 10) : undefined),
-    after: cursorPagination?.after || (after as string) || undefined,
-    last: cursorPagination?.last || (last ? parseInt(last as string, 10) : undefined),
-    before: cursorPagination?.before || (before as string) || undefined
-  };
+  const cursorPaginationObj: ExtendedRequest['cursorPagination'] = {};
+  
+  const firstValue = cursorPagination?.first ?? (first ? parseInt(first as string, 10) : undefined);
+  if (firstValue !== undefined) cursorPaginationObj.first = firstValue;
+  
+  const afterValue = cursorPagination?.after ?? (after ? (after as string) : undefined);
+  if (afterValue !== undefined) cursorPaginationObj.after = afterValue;
+  
+  const lastValue = cursorPagination?.last ?? (last ? parseInt(last as string, 10) : undefined);
+  if (lastValue !== undefined) cursorPaginationObj.last = lastValue;
+  
+  const beforeValue = cursorPagination?.before ?? (before ? (before as string) : undefined);
+  if (beforeValue !== undefined) cursorPaginationObj.before = beforeValue;
+  
+  req.cursorPagination = cursorPaginationObj;
 }
 
 /**
@@ -70,7 +79,7 @@ export function parseCursorPaginationParams(req: ExtendedRequest): void {
  * Adds pagination parsing to request object
  */
 export function paginationMiddleware(type: 'standard' | 'cursor' | 'both' = 'standard') {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     const extendedReq = req as ExtendedRequest;
     
     if (type === 'standard' || type === 'both') {
@@ -126,8 +135,8 @@ export function createCursorPaginatedResponse<T>(
   const pageInfo = {
     hasNextPage: options.hasNextPage,
     hasPreviousPage: options.hasPreviousPage,
-    startCursor: edges.length > 0 ? edges[0].cursor : undefined,
-    endCursor: edges.length > 0 ? edges[edges.length - 1].cursor : undefined,
+    startCursor: edges.length > 0 ? edges[0]?.cursor : undefined,
+    endCursor: edges.length > 0 ? edges[edges.length - 1]?.cursor : undefined,
     totalCount: options.totalCount
   };
   

@@ -177,14 +177,19 @@ export function createConnection<T>(
     cursor: options.getCursor(item)
   }));
 
+  const firstEdge = edges[0];
+  const lastEdge = edges[edges.length - 1];
+  const startCursor = firstEdge?.cursor;
+  const endCursor = lastEdge?.cursor;
+  
   return {
     edges,
     pageInfo: {
       hasNextPage: options.hasMore || false,
-      hasPreviousPage: false, // Will be determined by the before/after parameters
-      startCursor: edges.length > 0 ? edges[0].cursor : undefined,
-      endCursor: edges.length > 0 ? edges[edges.length - 1].cursor : undefined,
-      totalCount: options.totalCount
+      hasPreviousPage: false,
+      ...(startCursor && { startCursor }),
+      ...(endCursor && { endCursor }),
+      ...(options.totalCount !== undefined && { totalCount: options.totalCount })
     }
   };
 }
