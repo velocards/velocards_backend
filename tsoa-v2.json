@@ -1,0 +1,215 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/api/controllers/**/*.ts"],
+  "spec": {
+    "outputDirectory": "src/swagger",
+    "specVersion": 3,
+    "outputFileName": "swagger-v2.json",
+    "info": {
+      "title": "VeloCards API v2",
+      "version": "2.0.0",
+      "description": "Virtual card management and crypto payment platform API - Version 2 with standardized responses",
+      "contact": {
+        "name": "VeloCards Support",
+        "email": "support@velocards.com",
+        "url": "https://velocards.com"
+      },
+      "license": {
+        "name": "Proprietary"
+      }
+    },
+    "servers": [
+      {
+        "url": "https://api.velocards.com/api/v2",
+        "description": "Production server v2"
+      },
+      {
+        "url": "https://api.velocards.com/api/v1",
+        "description": "Production server v1 (legacy)"
+      },
+      {
+        "url": "http://localhost:3001/api/v2",
+        "description": "Development server v2"
+      },
+      {
+        "url": "http://localhost:3001/api/v1",
+        "description": "Development server v1 (legacy)"
+      }
+    ],
+    "securityDefinitions": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Authorization header using the Bearer scheme."
+      },
+      "ApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API Key for webhook endpoints"
+      }
+    },
+    "tags": [
+      {
+        "name": "Authentication",
+        "description": "User authentication and authorization"
+      },
+      {
+        "name": "Users",
+        "description": "User management operations"
+      },
+      {
+        "name": "Cards",
+        "description": "Virtual card operations"
+      },
+      {
+        "name": "Transactions",
+        "description": "Transaction management"
+      },
+      {
+        "name": "Crypto",
+        "description": "Cryptocurrency operations"
+      },
+      {
+        "name": "KYC",
+        "description": "Know Your Customer verification"
+      },
+      {
+        "name": "Invoices",
+        "description": "Invoice management"
+      },
+      {
+        "name": "Tiers",
+        "description": "User tier management"
+      },
+      {
+        "name": "Announcements",
+        "description": "System announcements"
+      }
+    ],
+    "components": {
+      "schemas": {
+        "BaseApiResponse": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean",
+              "description": "Indicates if the request was successful"
+            },
+            "data": {
+              "type": "object",
+              "description": "Response data (present when success is true)"
+            },
+            "error": {
+              "type": "string",
+              "description": "Error message (present when success is false)"
+            }
+          },
+          "required": ["success"]
+        },
+        "ApiResponseV2": {
+          "allOf": [
+            { "$ref": "#/components/schemas/BaseApiResponse" },
+            {
+              "type": "object",
+              "properties": {
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Response timestamp"
+                },
+                "correlationId": {
+                  "type": "string",
+                  "description": "Request correlation ID for tracking"
+                },
+                "version": {
+                  "type": "string",
+                  "description": "API version"
+                }
+              }
+            }
+          ]
+        },
+        "PaginationMetadata": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "type": "integer",
+              "description": "Total number of items"
+            },
+            "page": {
+              "type": "integer",
+              "description": "Current page number"
+            },
+            "pages": {
+              "type": "integer",
+              "description": "Total number of pages"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Items per page"
+            }
+          },
+          "required": ["total", "page", "pages"]
+        },
+        "PaginatedResponse": {
+          "allOf": [
+            { "$ref": "#/components/schemas/ApiResponseV2" },
+            {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "description": "Array of items"
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/PaginationMetadata"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "ErrorResponse": {
+          "allOf": [
+            { "$ref": "#/components/schemas/ApiResponseV2" },
+            {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "enum": [false]
+                },
+                "error": {
+                  "type": "string",
+                  "description": "Error message"
+                },
+                "errorCode": {
+                  "type": "string",
+                  "description": "Error code for programmatic handling"
+                },
+                "statusCode": {
+                  "type": "integer",
+                  "description": "HTTP status code"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "routes": {
+    "routesDir": "src/generated",
+    "routesFileName": "routes-v2.ts",
+    "basePath": "/api/v2",
+    "authenticationModule": "src/api/middlewares/auth.ts",
+    "middleware": "express"
+  }
+}
